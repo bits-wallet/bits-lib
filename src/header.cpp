@@ -6,30 +6,27 @@
 //
 
 #include "header.h"
+#include "parser/parser.h"
 
 unsigned int Header::syncHeight = 0;
 
+// We can construct header from raw bytes
 Header::Header(valtype rawHeader){
-    assert(rawHeader.size() == 80);
-
-    valtype versionParsed;
-    versionParsed.insert(versionParsed.begin(), rawHeader.begin(), rawHeader.begin()+4);
-    valtype prevHashParsed; prevHashParsed.insert(prevHashParsed.begin(), rawHeader.begin()+4, rawHeader.begin()+36);
-    valtype merkeRootParsed; merkeRootParsed.insert(merkeRootParsed.begin(), rawHeader.begin()+36, rawHeader.begin()+68);
-    valtype timestampParsed; timestampParsed.insert(timestampParsed.begin(), rawHeader.begin()+68, rawHeader.begin()+72);
-    valtype bitsParsed; bitsParsed.insert(bitsParsed.begin(), rawHeader.begin()+72, rawHeader.begin()+76);
-    valtype nonceParsed; nonceParsed.insert(nonceParsed.begin(), rawHeader.begin()+76, rawHeader.begin()+80);
+    HeaderParser *hp = new HeaderParser(rawHeader);
     
-    uint32_t version = WizData::LEtoUint32(versionParsed);
-    valtype prevHash = prevHashParsed;
-    valtype merkeRoot = merkeRootParsed;
-    uint32_t timestamp = WizData::LEtoUint32(timestampParsed);
-    uint32_t bits = WizData::LEtoUint32(bitsParsed);
-    uint32_t nonce = WizData::LEtoUint32(nonceParsed);
+    uint32_t version = WizData::LEtoUint32(hp->versionParsed);
+    valtype prevHash = hp->prevHashParsed;
+    valtype merkeRoot = hp->merkeRootParsed;
+    uint32_t timestamp = WizData::LEtoUint32(hp->timestampParsed);
+    uint32_t bits = WizData::LEtoUint32(hp->bitsParsed);
+    uint32_t nonce = WizData::LEtoUint32(hp->nonceParsed);
+    
+    delete hp;
            
     setHeader(version, prevHash, merkeRoot, timestamp, bits, nonce);
 }
 
+// We can construct header from 6 components
 Header::Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce) {
     setHeader(version, prevHash, merkeRoot, timestamp, bits, nonce);
 }
