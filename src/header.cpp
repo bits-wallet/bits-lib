@@ -38,7 +38,6 @@ Header::Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t t
 
 void Header::setHeader(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, valtype blockHash){
     assert(prevHash.size() == 32 && merkeRoot.size() == 32 && version >= 1);
-
     this->hash = blockHash;
     this->height = ++syncHeight;
     this->version = version;
