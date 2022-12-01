@@ -4,8 +4,6 @@
 //
 //  Created by Burak on 1.12.2022.
 //
-
-
 #include "header.h"
 
 int main() {
@@ -31,7 +29,6 @@ int main() {
     
     std::cout << "pa: " <<  nh << std::endl;
     std::cout << "pa2: " <<  nh2 << std::endl;
-
 
     return 0;
 }
