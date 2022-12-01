@@ -14,7 +14,6 @@
 typedef std::vector<unsigned char> valtype;
 
 class Parser {
-    
 };
 
 class HeaderParser: public Parser {
@@ -27,7 +26,6 @@ public:
     valtype nonceParsed;
 public:
     HeaderParser(valtype rawHeader);
-    ~HeaderParser() { std::cout << "hp des " << std::endl; };
 };
 
 #include <stdio.h>

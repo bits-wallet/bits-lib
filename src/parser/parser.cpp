@@ -8,7 +8,6 @@
 #include "parser.h"
 
 HeaderParser::HeaderParser(valtype rawHeader){
-    std::cout << "hp ini " << std::endl;
     this->versionParsed.insert(versionParsed.begin(), rawHeader.begin(), rawHeader.begin()+4);
     this->prevHashParsed.insert(prevHashParsed.begin(), rawHeader.begin()+4, rawHeader.begin()+36);
     this->merkeRootParsed.insert(merkeRootParsed.begin(), rawHeader.begin()+36, rawHeader.begin()+68);

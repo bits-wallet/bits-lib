@@ -29,7 +29,6 @@ private: //Header components
 public: //Header constructers
     Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
     Header(valtype rawHeader);
-    ~Header() { std::cout << "des" << std::endl; }
     void getInfo();
 };
 
