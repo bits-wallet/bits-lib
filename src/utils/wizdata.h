@@ -13,13 +13,16 @@
 #include <vector>
 #include <cmath>
 #include <sstream>
+#include "../utils/common.h"
 
 typedef std::vector<unsigned char> valtype;
 
 class WizData {
 public:
-    static uint32_t LEtoUint32(valtype in);
-    static uint64_t LEtoUint64(valtype in);
+    static valtype *Uint32ToLE(uint32_t in);
+    
+    static uint32_t *LEtoUint32(valtype in);
+    static uint64_t *LEtoUint64(valtype in);
     static valtype hexStringToValtype(std::string in);
 };
 

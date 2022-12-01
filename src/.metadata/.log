@@ -1,0 +1,14 @@
+!SESSION 2022-12-02 01:02:05.655 -----------------------------------------------
+eclipse.buildId=4.24.0.I20220607-0700
+java.version=17.0.4
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_TR
+Framework arguments:  -product org.eclipse.epp.package.cpp.product -keyring /Users/burak/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.epp.package.cpp.product -keyring /Users/burak/.eclipse_keyring
+
+!ENTRY org.eclipse.core.resources 4 77 2022-12-02 01:03:00.401
+!MESSAGE Invalid project description.
+!SUBENTRY 1 unknown 0 0 2022-12-02 01:03:00.401
+!MESSAGE OK
+!SUBENTRY 1 org.eclipse.core.resources 4 77 2022-12-02 01:03:00.401
+!MESSAGE /Users/burak/Desktop/Bits/bits-lib/src overlaps the workspace location: /Users/burak/Desktop/Bits/bits-lib/src

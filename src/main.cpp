@@ -6,8 +6,28 @@
 //
 #include "header.h"
 
-int main() {
+
+
+
+
+
+void test_1() {
     
+    
+    uint32_t x = 4294967294;
+    valtype *re = WizData::Uint32ToLE(x);
+    
+    std::cout << " aka " << (int)(*re)[0] << std::endl;
+    std::cout << " aka2 " << (int)(*re)[1] << std::endl;
+    std::cout << " aka3 " << (int)(*re)[2] << std::endl;
+    std::cout << " aka4 " << (int)(*re)[3] << std::endl;
+
+   
+    delete re;
+    
+    //std::cout << "babazz2 " << (re) << std::endl;
+    
+  
     valtype x1 = WizData::hexStringToValtype("0000c020d4d157a3341a9262af2d1d6cce");
     valtype x2 = WizData::hexStringToValtype("8b8a9321660df4bec56ac50a00000000");
     valtype x3 = WizData::hexStringToValtype("00000005eb125f08fa288bb0ea9ae08e9f");
@@ -30,5 +50,12 @@ int main() {
     std::cout << "pa: " <<  nh << std::endl;
     std::cout << "pa2: " <<  nh2 << std::endl;
 
-    return 0;
+
+}
+
+int main() {
+
+    test_1();
+    
+return 0;
 }

@@ -7,16 +7,30 @@
 
 #include "wizdata.h"
 
-uint32_t WizData::LEtoUint32(valtype in){
-    uint32_t val = 0;
-    for (int i = 0; i < in.size(); i++) { val+= (int)in[i] * pow(256,i); }
+uint32_t *WizData::LEtoUint32(valtype in){
+    uint32_t *val = new uint32_t(0);
+    for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256,i); }
     return val;
 }
 
-uint64_t WizData::LEtoUint64(valtype in){
-    uint64_t val = 0;
-    for (int i = 0; i < in.size(); i++) { val+= (int)in[i] * pow(256, i); }
+uint64_t *WizData::LEtoUint64(valtype in){
+    uint64_t *val = 0;
+    for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256, i); }
     return val;
+}
+
+valtype *WizData::Uint32ToLE(uint32_t in) {
+    unsigned char *ptr = new unsigned char;
+    WriteLE32(ptr,in);
+
+    valtype *returnVal = new valtype;
+    returnVal->push_back(ptr[0]);
+    returnVal->push_back(ptr[1]);
+    returnVal->push_back(ptr[2]);
+    returnVal->push_back(ptr[3]);
+    
+    delete ptr;
+    return returnVal;
 }
 
 valtype WizData::hexStringToValtype(std::string in){
