@@ -5,20 +5,32 @@
 //  Created by Burak on 1.12.2022.
 //
 
-#ifndef header_hpp
-#define header_hpp
+#ifndef header_h
+#define header_h
 
 #include <stdio.h>
-#include <vector>
+#include "utils/wizdata.h"
 
 class Header {
-private:
+    
+private: //Sync height
+    static unsigned int syncHeight;
+    void setHeader(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
+
+private: //Header components
+    unsigned int height;
     uint32_t version;
-    std::vector<unsigned char> prevHash;
-    std::vector<unsigned char> merkeRoot;
+    valtype prevHash;
+    valtype merkeRoot;
     uint32_t timestamp;
     uint32_t bits;
     uint32_t nonce;
+    
+public: //Header constructers
+    Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
+    Header(valtype rawHeader);
+    ~Header() { std::cout << "des" << std::endl; }
+    void getInfo();
 };
 
-#endif /* header_hpp */
+#endif /* header_h */
