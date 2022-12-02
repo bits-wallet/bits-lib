@@ -40,14 +40,21 @@ Header::Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t t
 }
 
 void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash){
-    this->hash = *blockHash;
-    this->height = ++syncHeight;
-    this->version = *version;
-    this->prevHash = *prevHash;
-    this->merkeRoot = *merkeRoot;
-    this-> timestamp = *timestamp;
-    this->bits = *bits;
-    this-> nonce = *nonce;
+    bool suc = true;
+    //Check 1
+    if (syncHeight != -1)
+        if(getHeaderHash(syncHeight) != *prevHash)
+            suc = false;
+    if(suc == true) {
+        this->hash = *blockHash;
+        this->height = ++syncHeight;
+        this->version = *version;
+        this->prevHash = *prevHash;
+        this->merkeRoot = *merkeRoot;
+        this-> timestamp = *timestamp;
+        this->bits = *bits;
+        this-> nonce = *nonce;
+    }
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;
 }
 
