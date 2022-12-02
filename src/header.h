@@ -51,10 +51,9 @@ class HeaderSync {
 public:
     static uint32_t startingSyncHeight;
     static uint32_t syncHeight;
-    static void submit_genesis_block();
     static uint32_t getSyncHeight() { return syncHeight; };
     HeaderSync();
-    //HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
+    HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
     HeaderSync(uint32_t startingHeight, valtype rawHeader);
 };
 

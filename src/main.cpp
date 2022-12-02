@@ -39,8 +39,7 @@ void test_submit_header_1() {
     valtype merkeRoot;
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
-    
-    std::cout << "test2: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231469665, 486604799, 2573394689) << std::endl;
+    std::cout << "submit: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231469665, 486604799, 2573394689) << std::endl;
 }
 
 void test_submit_header_2() {
@@ -56,7 +55,7 @@ void test_submit_header_2() {
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
     
-    std::cout << "test2: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024) << std::endl;
+    std::cout << "submit: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024) << std::endl;
 }
 
 void test_submit_header_3() {
@@ -72,7 +71,7 @@ void test_submit_header_3() {
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
     
-    std::cout << "test2: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231470173, 486604799, 1844305925) << std::endl;
+    std::cout << "submit: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231470173, 486604799, 1844305925) << std::endl;
 }
 
 void test_1() {
@@ -88,29 +87,40 @@ void test_1() {
     nv.insert(nv.begin() + x1.size() + x2.size() , x3.begin(),x3.end());
     nv.insert(nv.begin() + x1.size() + x2.size() + x3.size() , x4.begin(),x4.end());
     nv.insert(nv.begin() + x1.size() + x2.size() + x3.size() + x4.size() , x5.begin(),x5.end());
-    
-    std::cout << "test1: " << submitRawHeader(nv) << std::endl;
+    std::cout << "sdf: " << std::endl;
 }
 
+void initHeaderSyncGenesis() {
+    HeaderSync();
+}
 
+void initHeaderSyncFromHeight(uint32_t startHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce) {
+    HeaderSync(startHeight, version, prevHash, merkeRoot, timestamp, bits, nonce);
+}
 
 int main() {
-
-    HeaderSync *hs = new HeaderSync();
-    std::cout << "cbh " << getCurrentHeaderSyncHeight() << std::endl;
-
-    std::cout << "getHeaderTimestamp0 " << Header::getHeaderTimestamp(0) << std::endl;
+    valtype x1 = WizData::hexStringToValtype("4860eb18bf1b1620e37e9490fc8a427514");
+    valtype x2 = WizData::hexStringToValtype("416fd75159ab86688e9a8300000000");
+    valtype x3 = WizData::hexStringToValtype("d5fdcc541e25de1c7a5addedf24858b8");
+    valtype x4 = WizData::hexStringToValtype("bb665c9f36ef744ee42c316022c90f9b");
+    
+    valtype prevHash;
+    prevHash.insert(prevHash.begin(), x1.begin(),x1.end());
+    prevHash.insert(prevHash.begin() + x1.size() , x2.begin(),x2.end());
+    valtype merkeRoot;
+    merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
+    merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
+    
+    //initHeaderSyncFromHeight(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024);
+    initHeaderSyncGenesis();
+    
+    std::cout <<  HeaderSync::getSyncHeight()  << std::endl;
     
     test_submit_header_1();
-    std::cout << "cbh2 " << getCurrentHeaderSyncHeight() << std::endl;
-    std::cout << "getHeaderTimestamp1 " << Header::getHeaderTimestamp(1) << std::endl;
     
-    test_submit_header_2();
-    std::cout << "cbh3 " << getCurrentHeaderSyncHeight() << std::endl;
-    //std::cout << "getHeaderTimestamp2 " << Header::getHeaderTimestamp(2) << std::endl;
-    
-    //test_submit_header_3();
-    
+
+    std::cout <<  HeaderSync::getSyncHeight()  << std::endl;
+    //std::cout <<  Header::getHeaderTimestamp(3)  << std::endl;
 
     
     std::string s;

@@ -12,15 +12,20 @@ std::vector<uint64_t> Header::headerAddresses;
 uint32_t HeaderSync::startingSyncHeight;
 uint32_t HeaderSync::syncHeight;
 
-
 HeaderSync::HeaderSync(){
-        syncHeight = -1;
-        startingSyncHeight = 0;
-        submit_genesis_block();
+    syncHeight = -1;
+    startingSyncHeight = 0;
+    Header *genesisHeader = new Header(Hardcoded::genesisVersion,
+                                   Hardcoded::genesisPrevHeaderHash(),
+                                   Hardcoded::genesisMerkleRootHash(),
+                                   Hardcoded::genesisTimestamp,
+                                   Hardcoded::genesisBits,
+                                   Hardcoded::genesisNonce);
+    Header::headerAddresses.push_back((uint64_t)genesisHeader);
 };
 
 HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
-    syncHeight = - 1;
+    syncHeight = -1;
     startingSyncHeight = 0;
     valtype *blockHash = new valtype(32);
     CSHA256().Write(rawHeader.data(), rawHeader.size()).Finalize((*blockHash).data());
@@ -37,6 +42,20 @@ HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
     syncHeight = startingHeight;
     startingSyncHeight = startingHeight;
     delete hp;
+}
+
+HeaderSync::HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce) {
+    syncHeight = -1;
+    startingSyncHeight = 0;
+    HeaderConstructor *hc = new HeaderConstructor(version, prevHash, merkeRoot, timestamp, bits, nonce);
+    valtype *blockHash = new valtype(32);
+    CSHA256().Write(hc->rawHeader.data(), hc->rawHeader.size()).Finalize((*blockHash).data());
+    CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
+    Header *sh = new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
+    Header::headerAddresses.push_back((uint64_t)sh);
+    syncHeight = startingHeight;
+    startingSyncHeight = startingHeight;
+    delete hc;
 }
 
 // We can construct header from raw bytes 80
@@ -84,16 +103,6 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
         this-> nonce = *nonce;
     }
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;
-}
-
-void HeaderSync::submit_genesis_block(){
-    Header *genesisHeader = new Header(Hardcoded::genesisVersion,
-                                   Hardcoded::genesisPrevHeaderHash(),
-                                   Hardcoded::genesisMerkleRootHash(),
-                                   Hardcoded::genesisTimestamp,
-                                   Hardcoded::genesisBits,
-                                   Hardcoded::genesisNonce);
-    Header::headerAddresses.push_back((uint64_t)genesisHeader);
 }
 
 uint32_t Header::getHeaderVersion(uint64_t height) {
