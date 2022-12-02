@@ -8,6 +8,8 @@
 #include "header.h"
 #include "parser/parser.h"
 
+#include "arith_uint256.h"
+
 std::vector<uint64_t> Header::headerAddresses;
 uint32_t HeaderSync::startingSyncHeight;
 uint32_t HeaderSync::syncHeight;
@@ -92,6 +94,18 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     if (HeaderSync::syncHeight != -1)
         if(getHeaderHash(HeaderSync::syncHeight) != *prevHash)
             suc = false;
+    
+    arith_uint256 bnTarget;
+    bool fNegative; bool fOverflow;
+    &bnTarget.SetCompact(*bits, &fNegative, &fOverflow);
+    
+    //Check 2
+    if(bnTarget.GetHex() < WizData::LEtoUint256(*blockHash)->GetHex())
+        suc = false;
+    
+    //bnTarget.GetHex();
+    //WizData::LEtoUint256(*blockHash)->GetHex();
+    
     if(suc == true) {
         this->hash = *blockHash;
         this->height = ++HeaderSync::syncHeight;
@@ -136,4 +150,5 @@ valtype Header::getHeaderHash(uint64_t height) {
 uint32_t Header::getHeaderHeight(uint64_t height) {
     return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->height;
 }
+
 

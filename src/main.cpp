@@ -5,6 +5,7 @@
 //  Created by Burak on 1.12.2022.
 //
 #include "header.h"
+#include "arith_uint256.h"
 
 uint32_t getCurrentHeaderSyncHeight() {
     return HeaderSync::getSyncHeight();
@@ -99,6 +100,9 @@ void initHeaderSyncFromHeight(uint32_t startHeight, uint32_t version, valtype pr
 }
 
 int main() {
+    
+
+    
     valtype x1 = WizData::hexStringToValtype("4860eb18bf1b1620e37e9490fc8a427514");
     valtype x2 = WizData::hexStringToValtype("416fd75159ab86688e9a8300000000");
     valtype x3 = WizData::hexStringToValtype("d5fdcc541e25de1c7a5addedf24858b8");
@@ -117,6 +121,7 @@ int main() {
     std::cout <<  HeaderSync::getSyncHeight()  << std::endl;
     
     test_submit_header_1();
+    test_submit_header_2();
     
 
     std::cout <<  HeaderSync::getSyncHeight()  << std::endl;

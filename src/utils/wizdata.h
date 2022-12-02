@@ -14,11 +14,13 @@
 #include <cmath>
 #include <sstream>
 #include "../utils/common.h"
+#include "../uint256.h"
 
 typedef std::vector<unsigned char> valtype;
 
 class WizData {
 public:
+    static uint256 *LEtoUint256(valtype in);
     static valtype *Uint32ToLE(uint32_t in);
     static uint32_t *LEtoUint32(valtype in);
     static uint64_t *LEtoUint64(valtype in);

@@ -7,6 +7,7 @@
 
 #include "wizdata.h"
 
+
 uint32_t *WizData::LEtoUint32(valtype in){
     uint32_t *val = new uint32_t(0);
     for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256,i); }
@@ -16,6 +17,11 @@ uint32_t *WizData::LEtoUint32(valtype in){
 uint64_t *WizData::LEtoUint64(valtype in){
     uint64_t *val = 0;
     for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256, i); }
+    return val;
+}
+
+uint256 *WizData::LEtoUint256(valtype in){
+    uint256 *val = new uint256(in);
     return val;
 }
 
