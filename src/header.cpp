@@ -8,8 +8,36 @@
 #include "header.h"
 #include "parser/parser.h"
 
-uint32_t Header::syncHeight = -1;
 std::vector<uint64_t> Header::headerAddresses;
+uint32_t HeaderSync::startingSyncHeight;
+uint32_t HeaderSync::syncHeight;
+
+
+HeaderSync::HeaderSync(){
+        syncHeight = -1;
+        startingSyncHeight = 0;
+        submit_genesis_block();
+};
+
+HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
+    syncHeight = - 1;
+    startingSyncHeight = 0;
+    valtype *blockHash = new valtype(32);
+    CSHA256().Write(rawHeader.data(), rawHeader.size()).Finalize((*blockHash).data());
+    CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
+    HeaderParser *hp = new HeaderParser(rawHeader);
+    Header *sh = new Header(*WizData::LEtoUint32(hp->versionParsed), //Parse header version 4-byte LE
+              (hp->prevHashParsed), //Parse previos block hash 32-byte LE
+              (hp->merkeRootParsed), //Parse merkle root 32-byte LE
+              *WizData::LEtoUint32(hp->timestampParsed), //Parse timestamp 4-byte LE
+              *WizData::LEtoUint32(hp->bitsParsed), //Parse bits 4-byte LE
+              *WizData::LEtoUint32(hp->nonceParsed) //Parse nonce 4-byte LE
+              );
+    Header::headerAddresses.push_back((uint64_t)sh);
+    syncHeight = startingHeight;
+    startingSyncHeight = startingHeight;
+    delete hp;
+}
 
 // We can construct header from raw bytes 80
 Header::Header(valtype rawHeader){
@@ -42,12 +70,12 @@ Header::Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t t
 void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash){
     bool suc = true;
     //Check 1
-    if (syncHeight != -1)
-        if(getHeaderHash(syncHeight) != *prevHash)
+    if (HeaderSync::syncHeight != -1)
+        if(getHeaderHash(HeaderSync::syncHeight) != *prevHash)
             suc = false;
     if(suc == true) {
         this->hash = *blockHash;
-        this->height = ++syncHeight;
+        this->height = ++HeaderSync::syncHeight;
         this->version = *version;
         this->prevHash = *prevHash;
         this->merkeRoot = *merkeRoot;
@@ -58,34 +86,45 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;
 }
 
+void HeaderSync::submit_genesis_block(){
+    Header *genesisHeader = new Header(Hardcoded::genesisVersion,
+                                   Hardcoded::genesisPrevHeaderHash(),
+                                   Hardcoded::genesisMerkleRootHash(),
+                                   Hardcoded::genesisTimestamp,
+                                   Hardcoded::genesisBits,
+                                   Hardcoded::genesisNonce);
+    Header::headerAddresses.push_back((uint64_t)genesisHeader);
+}
+
 uint32_t Header::getHeaderVersion(uint64_t height) {
-    return ((Header*)Header::headerAddresses[height])->version;
+    return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->version;
 }
 
 valtype Header::getHeaderPrevHash(uint64_t height) {
-    return ((Header*)Header::headerAddresses[height])->prevHash;
+    return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->prevHash;
 }
 
 valtype Header::getHeaderMerkeRoot(uint64_t height) {
-    return ((Header*)Header::headerAddresses[height])->merkeRoot;
+    return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->merkeRoot;
 }
 
 uint32_t Header::getHeaderTimestamp(uint64_t height) {
-    return ((Header*)Header::headerAddresses[height])->timestamp;
+    return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->timestamp;
 }
 
 uint32_t Header::getHeaderBits(uint64_t height) {
-    return ((Header*)Header::headerAddresses[height])->bits;
+    return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->bits;
 }
 
 uint32_t Header::getHeaderNonce(uint64_t height) {
-    return ((Header*)Header::headerAddresses[height])->nonce;
+    return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->nonce;
 }
 
 valtype Header::getHeaderHash(uint64_t height) {
-    return ((Header*)Header::headerAddresses[height])->hash;
+    return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->hash;
 }
 
 uint32_t Header::getHeaderHeight(uint64_t height) {
-    return ((Header*)Header::headerAddresses[height])->height;
+    return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->height;
 }
+

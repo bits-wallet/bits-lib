@@ -11,10 +11,12 @@
 #include <stdio.h>
 #include "utils/wizdata.h"
 #include "crypto/sha256.h"
+#include "hardcoded.h"
+
+
 
 class Header {
 private: //Sync height
-    static uint32_t syncHeight;
     void setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash);
 
 private: //Header info
@@ -43,7 +45,17 @@ public:
     static uint32_t getHeaderBits(uint64_t height);
     static uint32_t getHeaderNonce(uint64_t height);
     static uint32_t getHeaderHeight(uint64_t height);
+};
+
+class HeaderSync {
+public:
+    static uint32_t startingSyncHeight;
+    static uint32_t syncHeight;
+    static void submit_genesis_block();
     static uint32_t getSyncHeight() { return syncHeight; };
+    HeaderSync();
+    //HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
+    HeaderSync(uint32_t startingHeight, valtype rawHeader);
 };
 
 #endif /* header_h */
