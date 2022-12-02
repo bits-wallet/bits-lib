@@ -13,7 +13,6 @@
 #include "crypto/sha256.h"
 
 class Header {
-    
 private: //Sync height
     static uint32_t syncHeight;
     void setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash);
@@ -33,7 +32,18 @@ private: //Header components
 public: //Header constructers
     Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
     Header(valtype rawHeader);
-    void getInfo();
+    
+public:
+    static std::vector<uint64_t> headerAddresses;
+    static valtype getHeaderPrevHash(uint64_t height);
+    static valtype getHeaderMerkeRoot(uint64_t height);
+    static valtype getHeaderHash(uint64_t height);
+    static uint32_t getHeaderVersion(uint64_t height);
+    static uint32_t getHeaderTimestamp(uint64_t height);
+    static uint32_t getHeaderBits(uint64_t height);
+    static uint32_t getHeaderNonce(uint64_t height);
+    static uint32_t getHeaderHeight(uint64_t height);
+    static uint32_t getSyncHeight() { return syncHeight; };
 };
 
 #endif /* header_h */

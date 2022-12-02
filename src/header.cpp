@@ -8,7 +8,8 @@
 #include "header.h"
 #include "parser/parser.h"
 
-uint32_t Header::syncHeight = 0;
+uint32_t Header::syncHeight = -1;
+std::vector<uint64_t> Header::headerAddresses;
 
 // We can construct header from raw bytes 80
 Header::Header(valtype rawHeader){
@@ -34,6 +35,7 @@ Header::Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t t
     valtype *blockHash = new valtype(32);
     CSHA256().Write(hc->rawHeader.data(), hc->rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
+    delete hc;
     setHeader(new uint32_t(version),new valtype(prevHash),new valtype(merkeRoot),new uint32_t(timestamp),new uint32_t(bits),new uint32_t(nonce),blockHash);
 }
 
@@ -49,14 +51,34 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;
 }
 
-void Header::getInfo(){
-    std::cout << "hash: " <<  (int)(this->hash)[31] << std::endl;
-    
-    std::cout << "height: " <<  this->height << std::endl;
-    std::cout << "version: " <<  this->version << std::endl;
-    std::cout << "prevHash: " <<  (int)(this->prevHash)[0] << std::endl;
-    std::cout << "merkeRoot: " <<  (int)(this->merkeRoot)[30] << std::endl;
-    std::cout << "timestamp: " <<  this->timestamp << std::endl;
-    std::cout << "bits: " <<  this->bits << std::endl;
-    std::cout << "nonce: " <<  this->nonce << std::endl;
+uint32_t Header::getHeaderVersion(uint64_t height) {
+    return ((Header*)Header::headerAddresses[height])->version;
+}
+
+valtype Header::getHeaderPrevHash(uint64_t height) {
+    return ((Header*)Header::headerAddresses[height])->prevHash;
+}
+
+valtype Header::getHeaderMerkeRoot(uint64_t height) {
+    return ((Header*)Header::headerAddresses[height])->merkeRoot;
+}
+
+uint32_t Header::getHeaderTimestamp(uint64_t height) {
+    return ((Header*)Header::headerAddresses[height])->timestamp;
+}
+
+uint32_t Header::getHeaderBits(uint64_t height) {
+    return ((Header*)Header::headerAddresses[height])->bits;
+}
+
+uint32_t Header::getHeaderNonce(uint64_t height) {
+    return ((Header*)Header::headerAddresses[height])->nonce;
+}
+
+valtype Header::getHeaderHash(uint64_t height) {
+    return ((Header*)Header::headerAddresses[height])->hash;
+}
+
+uint32_t Header::getHeaderHeight(uint64_t height) {
+    return ((Header*)Header::headerAddresses[height])->height;
 }
