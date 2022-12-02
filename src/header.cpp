@@ -12,11 +12,9 @@ uint32_t Header::syncHeight = 0;
 
 // We can construct header from raw bytes 80
 Header::Header(valtype rawHeader){
-    
     valtype *blockHash = new valtype(32);
     CSHA256().Write(rawHeader.data(), rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
-    
     HeaderParser *hp = new HeaderParser(rawHeader);
     setHeader(
               WizData::LEtoUint32(hp->versionParsed), //Parse header version 4-byte LE
@@ -32,11 +30,14 @@ Header::Header(valtype rawHeader){
 
 // We can construct header from 6 components
 Header::Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce) {
-    setHeader(new uint32_t(version), &prevHash, &merkeRoot, new uint32_t(timestamp), new uint32_t(bits), new uint32_t(nonce), &merkeRoot);
+    HeaderConstructor *hc = new HeaderConstructor(version, prevHash, merkeRoot, timestamp, bits, nonce);
+    valtype *blockHash = new valtype(32);
+    CSHA256().Write(hc->rawHeader.data(), hc->rawHeader.size()).Finalize((*blockHash).data());
+    CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
+    setHeader(new uint32_t(version),new valtype(prevHash),new valtype(merkeRoot),new uint32_t(timestamp),new uint32_t(bits),new uint32_t(nonce),blockHash);
 }
 
 void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash){
-    assert((*prevHash).size() == 32 && (*merkeRoot).size() == 32 && *version >= 1);
     this->hash = *blockHash;
     this->height = ++syncHeight;
     this->version = *version;
@@ -45,17 +46,15 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     this-> timestamp = *timestamp;
     this->bits = *bits;
     this-> nonce = *nonce;
-    
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;
-
 }
 
 void Header::getInfo(){
-    std::cout << "hash: " <<  (int)(this->hash)[24] << std::endl;
+    std::cout << "hash: " <<  (int)(this->hash)[31] << std::endl;
     
     std::cout << "height: " <<  this->height << std::endl;
     std::cout << "version: " <<  this->version << std::endl;
-    std::cout << "prevHash: " <<  (int)(this->prevHash)[2] << std::endl;
+    std::cout << "prevHash: " <<  (int)(this->prevHash)[0] << std::endl;
     std::cout << "merkeRoot: " <<  (int)(this->merkeRoot)[30] << std::endl;
     std::cout << "timestamp: " <<  this->timestamp << std::endl;
     std::cout << "bits: " <<  this->bits << std::endl;

@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <iostream>
+#include "../utils/wizdata.h"
 
 typedef std::vector<unsigned char> valtype;
 
@@ -26,6 +27,13 @@ public:
     valtype nonceParsed;
 public:
     HeaderParser(valtype rawHeader);
+};
+
+class HeaderConstructor: public Parser {
+public:
+    valtype rawHeader;
+public:
+    HeaderConstructor(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
 };
 
 #include <stdio.h>
