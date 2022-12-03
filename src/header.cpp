@@ -17,13 +17,12 @@ uint32_t HeaderSync::syncHeight;
 HeaderSync::HeaderSync(){
     syncHeight = -1;
     startingSyncHeight = 0;
-    Header *genesisHeader = new Header(Hardcoded::genesisVersion,
+    new Header(Hardcoded::genesisVersion,
                                    Hardcoded::genesisPrevHeaderHash(),
                                    Hardcoded::genesisMerkleRootHash(),
                                    Hardcoded::genesisTimestamp,
                                    Hardcoded::genesisBits,
                                    Hardcoded::genesisNonce);
-    Header::headerAddresses.push_back((uint64_t)genesisHeader);
 };
 
 HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
@@ -33,14 +32,13 @@ HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
     CSHA256().Write(rawHeader.data(), rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
     HeaderParser *hp = new HeaderParser(rawHeader);
-    Header *sh = new Header(*WizData::LEtoUint32(hp->versionParsed), //Parse header version 4-byte LE
+    new Header(*WizData::LEtoUint32(hp->versionParsed), //Parse header version 4-byte LE
               (hp->prevHashParsed), //Parse previos block hash 32-byte LE
               (hp->merkeRootParsed), //Parse merkle root 32-byte LE
               *WizData::LEtoUint32(hp->timestampParsed), //Parse timestamp 4-byte LE
               *WizData::LEtoUint32(hp->bitsParsed), //Parse bits 4-byte LE
               *WizData::LEtoUint32(hp->nonceParsed) //Parse nonce 4-byte LE
               );
-    Header::headerAddresses.push_back((uint64_t)sh);
     syncHeight = startingHeight;
     startingSyncHeight = startingHeight;
     delete hp;
@@ -53,8 +51,7 @@ HeaderSync::HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHa
     valtype *blockHash = new valtype(32);
     CSHA256().Write(hc->rawHeader.data(), hc->rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
-    Header *sh = new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
-    Header::headerAddresses.push_back((uint64_t)sh);
+    new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
     syncHeight = startingHeight;
     startingSyncHeight = startingHeight;
     delete hc;
@@ -133,6 +130,7 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
         this-> timestamp = *timestamp;
         this->bits = *bits;
         this-> nonce = *nonce;
+        Header::headerAddresses.push_back((uint64_t)this);
     }
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;
 }

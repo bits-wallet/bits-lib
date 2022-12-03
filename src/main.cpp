@@ -13,18 +13,15 @@ uint32_t getCurrentHeaderSyncHeight() {
 
 bool submitRawHeader(valtype rawHeader){
     uint32_t preSyncHeight = HeaderSync::getSyncHeight();
-    Header *newHeader = new Header(rawHeader);
-    Header::headerAddresses.push_back((uint64_t)newHeader);
+    new Header(rawHeader);
     uint32_t postSyncHeight = HeaderSync::getSyncHeight();
     return (preSyncHeight != postSyncHeight);
 }
 
 bool submitHeaderFromComponents(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce){
     uint32_t preSyncHeight = HeaderSync::getSyncHeight();
-    Header *newHeader = new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
-    Header::headerAddresses.push_back((uint64_t)newHeader);
+    new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
     uint32_t postSyncHeight = HeaderSync::getSyncHeight();
-    //std::cout << "reee "<< (preSyncHeight != postSyncHeight) << std::endl;
     return (preSyncHeight != postSyncHeight);
 }
 
@@ -121,8 +118,12 @@ int main() {
     test_submit_header_1();
     test_submit_header_2();
     test_submit_header_3();
+    
 
+    std::cout <<  HeaderSync::startingSyncHeight  << std::endl;
     std::cout <<  HeaderSync::getSyncHeight()  << std::endl;
+    std::cout <<  Header::headerAddresses.size() << std::endl;
+
     //std::cout <<  Header::getHeaderTimestamp(3)  << std::endl;
 
     
