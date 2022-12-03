@@ -97,10 +97,10 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     
     arith_uint256 bnTarget;
     bool fNegative; bool fOverflow;
-    &bnTarget.SetCompact(*bits, &fNegative, &fOverflow);
-    
+    bnTarget.SetCompact(*bits, &fNegative, &fOverflow);
+        
     //Check 2
-    if(bnTarget.GetHex() < WizData::LEtoUint256(*blockHash)->GetHex())
+    if(ArithToUint256(bnTarget).data() < WizData::LEtoUint256(*blockHash)->data())
         suc = false;
     
     //bnTarget.GetHex();
