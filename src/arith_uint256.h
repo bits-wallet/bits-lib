@@ -255,7 +255,7 @@ public:
      * floating point format.
      * The most significant 8 bits are the unsigned exponent of base 256.
      * This exponent can be thought of as "number of bytes of N".
-     * The lower 23 bits are the mantissa.
+     * The lowebits 23 bits are the mantissa.
      * Bit number 24 (0x800000) represents the sign of N.
      * N = (-1^sign) * mantissa * 256^(exponent-3)
      *

@@ -12,6 +12,7 @@
 
 class Hardcoded {
 public:
+    static const uint32_t retargetSeconds = 1209600;
     static const uint32_t genesisVersion = 1;
     static const uint32_t genesisTimestamp = 1231006505;
     static const uint32_t genesisBits = 486604799;

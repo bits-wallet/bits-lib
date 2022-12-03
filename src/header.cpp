@@ -94,18 +94,36 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     if (HeaderSync::syncHeight != -1)
         if(getHeaderHash(HeaderSync::syncHeight) != *prevHash)
             suc = false;
-    
+        
+    //Check 2 target
     arith_uint256 bnTarget;
     bool fNegative; bool fOverflow;
     bnTarget.SetCompact(*bits, &fNegative, &fOverflow);
-        
-    //Check 2
     if(ArithToUint256(bnTarget).data() < WizData::LEtoUint256(*blockHash)->data())
         suc = false;
     
-    //bnTarget.GetHex();
-    //WizData::LEtoUint256(*blockHash)->GetHex();
-    
+    //Check 3 retarget
+    if (Header::headerAddresses.size() >= 2015)
+        if ((HeaderSync::syncHeight + 1) % 2016 == 0) {
+            uint32_t secondGap = Header::getHeaderTimestamp(HeaderSync::syncHeight) - Header::getHeaderTimestamp(HeaderSync::syncHeight - 2015);
+        
+            if (secondGap < Hardcoded::retargetSeconds/4)
+                secondGap = Hardcoded::retargetSeconds/4;
+            if (secondGap > Hardcoded::retargetSeconds*4)
+                secondGap = Hardcoded::retargetSeconds*4;
+            
+            arith_uint256 bnNew;
+                bnNew.SetCompact(Header::getHeaderBits(HeaderSync::getSyncHeight()));
+                bnNew *= secondGap;
+                bnNew /= Hardcoded::retargetSeconds;
+            if(bnNew.GetCompact() != *bits)
+                suc = false;
+        }
+        else {
+            if(*bits != Header::getHeaderBits(HeaderSync::getSyncHeight()))
+                suc = false;
+        }
+
     if(suc == true) {
         this->hash = *blockHash;
         this->height = ++HeaderSync::syncHeight;
