@@ -13,6 +13,8 @@
 std::vector<uint64_t> Header::headerAddresses;
 uint32_t HeaderSync::startingSyncHeight;
 uint32_t HeaderSync::syncHeight;
+uint32_t HeaderSync::periodBeginningBits;
+uint32_t HeaderSync::periodBeginningTimestamp;
 
 HeaderSync::HeaderSync(){
     syncHeight = -1; startingSyncHeight = 0;
@@ -22,13 +24,17 @@ HeaderSync::HeaderSync(){
                                    Hardcoded::genesisTimestamp,
                                    Hardcoded::genesisBits,
                                    Hardcoded::genesisNonce);
+    this->periodBeginningBits = Hardcoded::genesisBits;
+    this->periodBeginningTimestamp = Hardcoded::genesisTimestamp;
 };
 
-HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
+HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader, uint32_t periodBits, uint32_t periodTimestamp){
     syncHeight = startingHeight -1; startingSyncHeight = startingHeight;
+    
     valtype *blockHash = new valtype(32);
     CSHA256().Write(rawHeader.data(), rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
+    
     HeaderParser *hp = new HeaderParser(rawHeader);
     new Header(*WizData::LEtoUint32(hp->versionParsed), //Parse header version 4-byte LE
               (hp->prevHashParsed), //Parse previos block hash 32-byte LE
@@ -37,18 +43,28 @@ HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
               *WizData::LEtoUint32(hp->bitsParsed), //Parse bits 4-byte LE
               *WizData::LEtoUint32(hp->nonceParsed) //Parse nonce 4-byte LE
               );
+    
     assert(startingHeight == startingSyncHeight);
+    this->periodBeginningBits = periodBits;
+    this->periodBeginningTimestamp = periodTimestamp;
+    
     delete hp;
 }
 
-HeaderSync::HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce) {
+HeaderSync::HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBits, uint32_t periodTimestamp) {
     syncHeight = startingHeight -1; startingSyncHeight = startingHeight;
     HeaderConstructor *hc = new HeaderConstructor(version, prevHash, merkeRoot, timestamp, bits, nonce);
+    
     valtype *blockHash = new valtype(32);
     CSHA256().Write(hc->rawHeader.data(), hc->rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
+    
     new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
     assert(startingHeight == startingSyncHeight);
+    
+    this->periodBeginningBits = periodBits;
+    this->periodBeginningTimestamp = periodTimestamp;
+    
     delete hc;
 }
 
@@ -57,6 +73,7 @@ Header::Header(valtype rawHeader){
     valtype *blockHash = new valtype(32);
     CSHA256().Write(rawHeader.data(), rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
+    
     HeaderParser *hp = new HeaderParser(rawHeader);
     setHeader(
               WizData::LEtoUint32(hp->versionParsed), //Parse header version 4-byte LE
@@ -73,23 +90,25 @@ Header::Header(valtype rawHeader){
 // We can construct header from 6 components
 Header::Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce) {
     HeaderConstructor *hc = new HeaderConstructor(version, prevHash, merkeRoot, timestamp, bits, nonce);
+    
     valtype *blockHash = new valtype(32);
     CSHA256().Write(hc->rawHeader.data(), hc->rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
+    
     delete hc;
     setHeader(new uint32_t(version),new valtype(prevHash),new valtype(merkeRoot),new uint32_t(timestamp),new uint32_t(bits),new uint32_t(nonce),blockHash);
 }
 
 void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash){
     bool suc = true;
-    bool ovveride = false;
+    bool rewrite = false;
     
     //Check 1
     if (Header::headerAddresses.size() > 0)
         if(getHeaderHash(HeaderSync::syncHeight) != *prevHash) {
             if(getHeaderPrevHash(HeaderSync::syncHeight) == *prevHash){
                 //override
-                ovveride = true;
+                rewrite = true;
             } else {
                 //fail
                 suc = false;
@@ -100,30 +119,36 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     arith_uint256 bnTarget;
     bool fNegative; bool fOverflow;
     bnTarget.SetCompact(*bits, &fNegative, &fOverflow);
+    
     if(ArithToUint256(bnTarget).data() < WizData::LEtoUint256(*blockHash)->data())
         suc = false;
     
     //Check 3 retarget
-    if (Header::headerAddresses.size() >= 2015)
-        if ((HeaderSync::syncHeight + 1) % 2016 == 0) {
-            uint32_t secondGap = Header::getHeaderTimestamp(HeaderSync::syncHeight) - Header::getHeaderTimestamp(HeaderSync::syncHeight - 2015);
-        
-            if (secondGap < Hardcoded::retargetSeconds/4)
-                secondGap = Hardcoded::retargetSeconds/4;
-            if (secondGap > Hardcoded::retargetSeconds*4)
-                secondGap = Hardcoded::retargetSeconds*4;
-            
-            arith_uint256 bnNew;
-                bnNew.SetCompact(Header::getHeaderBits(HeaderSync::getSyncHeight()));
-                bnNew *= secondGap;
-                bnNew /= Hardcoded::retargetSeconds;
-            if(bnNew.GetCompact() != *bits)
-                suc = false;
+    if(Header::headerAddresses.size() > 0){
+        if ((HeaderSync::syncHeight + 1) % 2016 != 0) {
+            if(*bits != Header::getHeaderBits(HeaderSync::getSyncHeight()))
+        suc = false;
         }
         else {
-            if(*bits != Header::getHeaderBits(HeaderSync::getSyncHeight()))
+            uint32_t secondGap = Header::getHeaderTimestamp(HeaderSync::syncHeight) - HeaderSync::periodBeginningTimestamp;
+            
+            if (secondGap < Hardcoded::retargetSeconds / 4)
+                secondGap = Hardcoded::retargetSeconds / 4;
+            if (secondGap > Hardcoded::retargetSeconds * 4)
+                secondGap = Hardcoded::retargetSeconds * 4;
+            
+            arith_uint256 bnNew;
+                bnNew.SetCompact(HeaderSync::periodBeginningBits);
+                bnNew *= secondGap;
+                bnNew /= Hardcoded::retargetSeconds;
+            
+            if(bnNew.GetCompact() != *bits)
                 suc = false;
+            else
+                HeaderSync::periodBeginningBits = *bits;
+                HeaderSync::periodBeginningTimestamp = *timestamp;
         }
+    }
     
     if(suc == true) {
         this->hash = *blockHash;
@@ -133,13 +158,16 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
         this-> timestamp = *timestamp;
         this->bits = *bits;
         this-> nonce = *nonce;
-        if(ovveride == true) {
+        
+        if(rewrite == true) {
             delete (Header*)Header::headerAddresses[Header::headerAddresses.size()-1];
             Header::headerAddresses.erase(Header::headerAddresses.end()-1);
             this->height = HeaderSync::syncHeight;
-        } else {
+        }
+        else {
             this->height = ++HeaderSync::syncHeight;
         }
+        
         Header::headerAddresses.push_back((uint64_t)this);
     }
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;

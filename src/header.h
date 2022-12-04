@@ -49,12 +49,14 @@ public:
 
 class HeaderSync {
 public:
+    static uint32_t periodBeginningBits;
+    static uint32_t periodBeginningTimestamp;
     static uint32_t startingSyncHeight;
     static uint32_t syncHeight;
     static uint32_t getSyncHeight() { return syncHeight; };
     HeaderSync();
-    HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce);
-    HeaderSync(uint32_t startingHeight, valtype rawHeader);
+    HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBeginningBits, uint32_t periodBeginningTimestamp);
+    HeaderSync(uint32_t startingHeight, valtype rawHeader, uint32_t periodBeginningBits, uint32_t periodBeginningTimestamp);
 };
 
 #endif /* header_h */

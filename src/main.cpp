@@ -92,8 +92,12 @@ void initHeaderSyncGenesis() {
     HeaderSync();
 }
 
-void initHeaderSyncFromHeight(uint32_t startHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce) {
-    HeaderSync(startHeight, version, prevHash, merkeRoot, timestamp, bits, nonce);
+void initHeaderSyncFromHeightWithComponents(uint32_t startHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBits, uint32_t periodTimestamp) {
+    HeaderSync(startHeight, version, prevHash, merkeRoot, timestamp, bits, nonce, periodBits, periodTimestamp);
+}
+
+void initHeaderSyncFromHeightRaw(uint32_t startHeight, valtype rawHeader, uint32_t periodBits, uint32_t periodTimestamp) {
+    HeaderSync(startHeight, rawHeader, periodBits, periodTimestamp);
 }
 
 int main() {
@@ -110,12 +114,12 @@ int main() {
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
     
-    initHeaderSyncFromHeight(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024);
-    //initHeaderSyncGenesis();
-
-     test_submit_header_1();
-     test_submit_header_2();
-     test_submit_header_3();
+    //initHeaderSyncFromHeightWithComponents(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024, 486604799, 1231006505);
+    initHeaderSyncGenesis();
+    
+    test_submit_header_1();
+    test_submit_header_2();
+    test_submit_header_3();
     
     std::string s;
     std::cin >> s;
