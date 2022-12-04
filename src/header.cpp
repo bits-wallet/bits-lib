@@ -103,31 +103,28 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     bool suc = true;
     bool rewrite = false;
     
+    if (Header::headerAddresses.size() > 0) {
+        
     //Check 1
-    if (Header::headerAddresses.size() > 0)
-        if(getHeaderHash(HeaderSync::syncHeight) != *prevHash) {
-            if(getHeaderPrevHash(HeaderSync::syncHeight) == *prevHash){
-                //override
-                rewrite = true;
-            } else {
-                //fail
-                suc = false;
-            }
+    if(getHeaderHash(HeaderSync::syncHeight) != *prevHash) {
+        if(getHeaderPrevHash(HeaderSync::syncHeight) == *prevHash){
+            //rewrite block
+            rewrite = true;
+        } else {
+            //fail
+            suc = false;
         }
+    }
 
     //Check 2 target
     arith_uint256 bnTarget;
     bool fNegative; bool fOverflow;
     bnTarget.SetCompact(*bits, &fNegative, &fOverflow);
-    
-    if(ArithToUint256(bnTarget).data() < WizData::LEtoUint256(*blockHash)->data())
-        suc = false;
+    if(ArithToUint256(bnTarget).data() < WizData::LEtoUint256(*blockHash)->data()) suc = false;
     
     //Check 3 retarget
-    if(Header::headerAddresses.size() > 0){
         if ((HeaderSync::syncHeight + 1) % 2016 != 0) {
-            if(*bits != Header::getHeaderBits(HeaderSync::getSyncHeight()))
-        suc = false;
+            if(*bits != Header::getHeaderBits(HeaderSync::getSyncHeight())) suc = false;
         }
         else {
             uint32_t secondGap = Header::getHeaderTimestamp(HeaderSync::syncHeight) - HeaderSync::periodBeginningTimestamp;
