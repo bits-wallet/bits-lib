@@ -8,24 +8,24 @@
 #include "arith_uint256.h"
 #include <chrono>
 
+
 using namespace std::chrono;
 
 uint32_t getCurrentHeaderSyncHeight() {
     return HeaderSync::getSyncHeight();
 }
 
-uint32_t submitRawHeader(valtype rawHeader){
-    Header *newHeader = new Header(rawHeader);
+uint32_t submitRawHeader(unsigned char rawHeader[80]){
+    Header *newHeader = new Header(WizData::buffer80ToValtype(rawHeader));
     bool success = (newHeader->height > 0);
     if (!success) delete newHeader;
     return HeaderSync::syncHeight;
 }
 
-uint32_t submitHeaderFromComponents(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce){
-    Header *newHeader = new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
+uint32_t submitHeaderFromComponents(uint32_t version, unsigned char prevHash[32], unsigned char merkeRoot[32], uint32_t timestamp, uint32_t bits, uint32_t nonce){
+    Header *newHeader = new Header(version, WizData::buffer32ToValtype(prevHash), WizData::buffer32ToValtype(merkeRoot), timestamp, bits, nonce);
     bool success = (newHeader->height > 0);
     if (!success) delete newHeader;
-
     return HeaderSync::syncHeight;
 }
 
@@ -56,7 +56,13 @@ void test_submit_header_1() {
     valtype merkeRoot;
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
-    std::cout << "submit: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231469665, 486604799, 2573394689) << std::endl;
+
+    Header *newHeader = new Header(1, prevHash, merkeRoot, 1231469665, 486604799, 2573394689);
+    bool success = (newHeader->height > 0);
+    if (!success) delete newHeader;
+    
+    std::cout << "submit: " << success << std::endl;
+    
 }
 
 void test_submit_header_2() {
@@ -72,8 +78,12 @@ void test_submit_header_2() {
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
     
-    std::cout << "submit: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024) << std::endl;
-}
+    Header *newHeader = new Header(1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024);
+    bool success = (newHeader->height > 0);
+    if (!success) delete newHeader;
+    
+    std::cout << "submit: " << success << std::endl;
+    }
 
 void test_submit_header_3() {
     valtype x1 = WizData::hexStringToValtype("bddd99ccfda39da1b108ce1a5d7003");
@@ -88,8 +98,12 @@ void test_submit_header_3() {
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
     
-    std::cout << "submit: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231470173, 486604799, 1844305925) << std::endl;
-}
+    Header *newHeader = new Header(1, prevHash, merkeRoot, 1231470173, 486604799, 1844305925);
+    bool success = (newHeader->height > 0);
+    if (!success) delete newHeader;
+    
+    std::cout << "submit: " << success << std::endl;
+    }
 
 int main() {
     
@@ -109,11 +123,13 @@ int main() {
     
     //initHeaderSyncFromHeightWithComponents(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024, 486604799, 1231006505, tsar);
    
-    //std::cout << initHeaderSyncGenesis() << std::endl;
+    //initHeaderSyncGenesis();
     
     //test_submit_header_1();
     //test_submit_header_2();
     //test_submit_header_3();
+    
+
         
     std::string s;
     std::cin >> s;

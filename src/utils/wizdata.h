@@ -20,6 +20,8 @@ typedef std::vector<unsigned char> valtype;
 
 class WizData {
 public:
+    static valtype buffer32ToValtype(unsigned char *buffer);
+    static valtype buffer80ToValtype(unsigned char *buffer);
     static uint256 *LEtoUint256(valtype in);
     static valtype *Uint32ToLE(uint32_t in);
     static uint32_t *LEtoUint32(valtype in);

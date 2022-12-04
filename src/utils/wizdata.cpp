@@ -7,6 +7,21 @@
 
 #include "wizdata.h"
 
+valtype WizData::buffer80ToValtype(unsigned char *buffer){
+    valtype val;
+    for (int i = 0; i < 80; i++) {
+        val.push_back(buffer[i]);
+    }
+    return val;
+}
+
+valtype WizData::buffer32ToValtype(unsigned char *buffer){
+    valtype val;
+    for (int i = 0; i < 32; i++) {
+        val.push_back(buffer[i]);
+    }
+    return val;
+}
 
 uint32_t *WizData::LEtoUint32(valtype in){
     uint32_t *val = new uint32_t(0);
