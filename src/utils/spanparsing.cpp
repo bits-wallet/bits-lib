@@ -4,7 +4,7 @@
 
 #include "spanparsing.h"
 
-#include "../span.h"
+#include "span.h"
 
 #include <algorithm>
 #include <cstddef>

@@ -13,8 +13,6 @@
 #include "crypto/sha256.h"
 #include "hardcoded.h"
 
-
-
 class Header {
 private: //Sync height
     void setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash);
@@ -49,14 +47,15 @@ public:
 
 class HeaderSync {
 public:
+    static std::vector<uint32_t> ancestorPast11Timestamps;
     static uint32_t periodBeginningBits;
     static uint32_t periodBeginningTimestamp;
     static uint32_t startingSyncHeight;
     static uint32_t syncHeight;
     static uint32_t getSyncHeight() { return syncHeight; };
     HeaderSync();
-    HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBeginningBits, uint32_t periodBeginningTimestamp);
-    HeaderSync(uint32_t startingHeight, valtype rawHeader, uint32_t periodBeginningBits, uint32_t periodBeginningTimestamp);
+    HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBeginningBits, uint32_t periodBeginningTimestamp, int atsAr[11]);
+    HeaderSync(uint32_t startingHeight, valtype rawHeader, uint32_t periodBeginningBits, uint32_t periodBeginningTimestamp, int atsAr[11]);
 };
 
 #endif /* header_h */

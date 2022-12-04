@@ -6,23 +6,42 @@
 //
 #include "header.h"
 #include "arith_uint256.h"
+#include <chrono>
+
+using namespace std::chrono;
 
 uint32_t getCurrentHeaderSyncHeight() {
     return HeaderSync::getSyncHeight();
 }
 
-bool submitRawHeader(valtype rawHeader){
+uint32_t submitRawHeader(valtype rawHeader){
     Header *newHeader = new Header(rawHeader);
     bool success = (newHeader->height > 0);
     if (!success) delete newHeader;
-    return success;
+    return HeaderSync::syncHeight;
 }
 
-bool submitHeaderFromComponents(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce){
+uint32_t submitHeaderFromComponents(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce){
     Header *newHeader = new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
     bool success = (newHeader->height > 0);
     if (!success) delete newHeader;
-    return success;
+
+    return HeaderSync::syncHeight;
+}
+
+bool initHeaderSyncGenesis() {
+    HeaderSync();
+    return (HeaderSync::ancestorPast11Timestamps.size() == 11);
+}
+
+bool initHeaderSyncFromHeightWithComponents(uint32_t startHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBits, uint32_t periodTimestamp, int atsAr[11]) {
+    HeaderSync(startHeight, version, prevHash, merkeRoot, timestamp, bits, nonce, periodBits, periodTimestamp, atsAr);
+    return (HeaderSync::ancestorPast11Timestamps.size() == 11);
+}
+
+bool initHeaderSyncFromHeightRaw(uint32_t startHeight, valtype rawHeader, uint32_t periodBits, uint32_t periodTimestamp, int atsAr[11]) {
+    HeaderSync(startHeight, rawHeader, periodBits, periodTimestamp, atsAr);
+    return (HeaderSync::ancestorPast11Timestamps.size() == 11);
 }
 
 void test_submit_header_1() {
@@ -72,34 +91,6 @@ void test_submit_header_3() {
     std::cout << "submit: " << submitHeaderFromComponents(1, prevHash, merkeRoot, 1231470173, 486604799, 1844305925) << std::endl;
 }
 
-void test_1() {
-    valtype x1 = WizData::hexStringToValtype("0000c020d4d157a3341a9262af2d1d6cce");
-    valtype x2 = WizData::hexStringToValtype("8b8a9321660df4bec56ac50a00000000");
-    valtype x3 = WizData::hexStringToValtype("00000005eb125f08fa288bb0ea9ae08e9f");
-    valtype x4 = WizData::hexStringToValtype("e4b975809431cbb246d10ac18b7f83281d");
-    valtype x5 = WizData::hexStringToValtype("fefda188638ac733190ade619b");
-
-    valtype nv;
-    nv.insert(nv.begin(), x1.begin(),x1.end());
-    nv.insert(nv.begin() + x1.size() , x2.begin(),x2.end());
-    nv.insert(nv.begin() + x1.size() + x2.size() , x3.begin(),x3.end());
-    nv.insert(nv.begin() + x1.size() + x2.size() + x3.size() , x4.begin(),x4.end());
-    nv.insert(nv.begin() + x1.size() + x2.size() + x3.size() + x4.size() , x5.begin(),x5.end());
-    std::cout << "sdf: " << std::endl;
-}
-
-void initHeaderSyncGenesis() {
-    HeaderSync();
-}
-
-void initHeaderSyncFromHeightWithComponents(uint32_t startHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBits, uint32_t periodTimestamp) {
-    HeaderSync(startHeight, version, prevHash, merkeRoot, timestamp, bits, nonce, periodBits, periodTimestamp);
-}
-
-void initHeaderSyncFromHeightRaw(uint32_t startHeight, valtype rawHeader, uint32_t periodBits, uint32_t periodTimestamp) {
-    HeaderSync(startHeight, rawHeader, periodBits, periodTimestamp);
-}
-
 int main() {
     
     valtype x1 = WizData::hexStringToValtype("4860eb18bf1b1620e37e9490fc8a427514");
@@ -114,13 +105,16 @@ int main() {
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
     
-    //initHeaderSyncFromHeightWithComponents(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024, 486604799, 1231006505);
-    initHeaderSyncGenesis();
+    int tsar[] = {0,0,0,0,0,0,0,0,0,0,0};
+    
+    initHeaderSyncFromHeightWithComponents(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024, 486604799, 1231006505, tsar);
+   
+    //std::cout << initHeaderSyncGenesis() << std::endl;
     
     test_submit_header_1();
     test_submit_header_2();
     test_submit_header_3();
-    
+        
     std::string s;
     std::cin >> s;
     
