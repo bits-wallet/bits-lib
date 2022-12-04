@@ -19,7 +19,7 @@ class Header {
 private: //Sync height
     void setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash);
 
-private: //Header info
+public: //Header info
     uint32_t height;
     valtype hash;
     

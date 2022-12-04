@@ -12,17 +12,17 @@ uint32_t getCurrentHeaderSyncHeight() {
 }
 
 bool submitRawHeader(valtype rawHeader){
-    uint32_t preSyncHeight = HeaderSync::getSyncHeight();
-    new Header(rawHeader);
-    uint32_t postSyncHeight = HeaderSync::getSyncHeight();
-    return (preSyncHeight != postSyncHeight);
+    Header *newHeader = new Header(rawHeader);
+    bool success = (newHeader->height > 0);
+    if (!success) delete newHeader;
+    return success;
 }
 
 bool submitHeaderFromComponents(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce){
-    uint32_t preSyncHeight = HeaderSync::getSyncHeight();
-    new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
-    uint32_t postSyncHeight = HeaderSync::getSyncHeight();
-    return (preSyncHeight != postSyncHeight);
+    Header *newHeader = new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
+    bool success = (newHeader->height > 0);
+    if (!success) delete newHeader;
+    return success;
 }
 
 void test_submit_header_1() {
@@ -110,22 +110,12 @@ int main() {
     merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
     merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
     
-    //initHeaderSyncFromHeight(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024);
-    initHeaderSyncGenesis();
-    
-    std::cout <<  HeaderSync::getSyncHeight()  << std::endl;
-    
-    test_submit_header_1();
-    test_submit_header_2();
-    test_submit_header_3();
-    
+    initHeaderSyncFromHeight(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024);
+    //initHeaderSyncGenesis();
 
-    std::cout <<  HeaderSync::startingSyncHeight  << std::endl;
-    std::cout <<  HeaderSync::getSyncHeight()  << std::endl;
-    std::cout <<  Header::headerAddresses.size() << std::endl;
-
-    //std::cout <<  Header::getHeaderTimestamp(3)  << std::endl;
-
+     test_submit_header_1();
+     test_submit_header_2();
+     test_submit_header_3();
     
     std::string s;
     std::cin >> s;

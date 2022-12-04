@@ -15,8 +15,7 @@ uint32_t HeaderSync::startingSyncHeight;
 uint32_t HeaderSync::syncHeight;
 
 HeaderSync::HeaderSync(){
-    syncHeight = -1;
-    startingSyncHeight = 0;
+    syncHeight = -1; startingSyncHeight = 0;
     new Header(Hardcoded::genesisVersion,
                                    Hardcoded::genesisPrevHeaderHash(),
                                    Hardcoded::genesisMerkleRootHash(),
@@ -26,8 +25,7 @@ HeaderSync::HeaderSync(){
 };
 
 HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
-    syncHeight = -1;
-    startingSyncHeight = 0;
+    syncHeight = startingHeight -1; startingSyncHeight = startingHeight;
     valtype *blockHash = new valtype(32);
     CSHA256().Write(rawHeader.data(), rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
@@ -39,21 +37,18 @@ HeaderSync::HeaderSync(uint32_t startingHeight, valtype rawHeader){
               *WizData::LEtoUint32(hp->bitsParsed), //Parse bits 4-byte LE
               *WizData::LEtoUint32(hp->nonceParsed) //Parse nonce 4-byte LE
               );
-    syncHeight = startingHeight;
-    startingSyncHeight = startingHeight;
+    assert(startingHeight == startingSyncHeight);
     delete hp;
 }
 
 HeaderSync::HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce) {
-    syncHeight = -1;
-    startingSyncHeight = 0;
+    syncHeight = startingHeight -1; startingSyncHeight = startingHeight;
     HeaderConstructor *hc = new HeaderConstructor(version, prevHash, merkeRoot, timestamp, bits, nonce);
     valtype *blockHash = new valtype(32);
     CSHA256().Write(hc->rawHeader.data(), hc->rawHeader.size()).Finalize((*blockHash).data());
     CSHA256().Write((*blockHash).data(), (*blockHash).size()).Finalize((*blockHash).data());
     new Header(version, prevHash, merkeRoot, timestamp, bits, nonce);
-    syncHeight = startingHeight;
-    startingSyncHeight = startingHeight;
+    assert(startingHeight == startingSyncHeight);
     delete hc;
 }
 
@@ -87,11 +82,20 @@ Header::Header(uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t t
 
 void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot, uint32_t *timestamp, uint32_t *bits, uint32_t *nonce, valtype *blockHash){
     bool suc = true;
+    bool ovveride = false;
+    
     //Check 1
-    if (HeaderSync::syncHeight != -1)
-        if(getHeaderHash(HeaderSync::syncHeight) != *prevHash)
-            suc = false;
-        
+    if (Header::headerAddresses.size() > 0)
+        if(getHeaderHash(HeaderSync::syncHeight) != *prevHash) {
+            if(getHeaderPrevHash(HeaderSync::syncHeight) == *prevHash){
+                //override
+                ovveride = true;
+            } else {
+                //fail
+                suc = false;
+            }
+        }
+
     //Check 2 target
     arith_uint256 bnTarget;
     bool fNegative; bool fOverflow;
@@ -120,16 +124,22 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
             if(*bits != Header::getHeaderBits(HeaderSync::getSyncHeight()))
                 suc = false;
         }
-
+    
     if(suc == true) {
         this->hash = *blockHash;
-        this->height = ++HeaderSync::syncHeight;
         this->version = *version;
         this->prevHash = *prevHash;
         this->merkeRoot = *merkeRoot;
         this-> timestamp = *timestamp;
         this->bits = *bits;
         this-> nonce = *nonce;
+        if(ovveride == true) {
+            delete (Header*)Header::headerAddresses[Header::headerAddresses.size()-1];
+            Header::headerAddresses.erase(Header::headerAddresses.end()-1);
+            this->height = HeaderSync::syncHeight;
+        } else {
+            this->height = ++HeaderSync::syncHeight;
+        }
         Header::headerAddresses.push_back((uint64_t)this);
     }
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;
