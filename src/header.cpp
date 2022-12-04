@@ -128,7 +128,7 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
     arith_uint256 bnTarget;
         bool fNegative; bool fOverflow;
         bnTarget.SetCompact(*bits, &fNegative, &fOverflow);
-        if(ArithToUint256(bnTarget).data() < WizData::LEtoUint256(*blockHash)->data()) suc = false;
+        if(bnTarget.GetHex() < WizData::LEtoUint256(*blockHash)->GetHex()) suc = false;
 
     //Check 3 retarget
         if ((HeaderSync::syncHeight + 1) % 2016 != 0) {

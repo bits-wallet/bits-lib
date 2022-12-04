@@ -93,27 +93,27 @@ void test_submit_header_3() {
 
 int main() {
     
-    valtype x1 = WizData::hexStringToValtype("4860eb18bf1b1620e37e9490fc8a427514");
-    valtype x2 = WizData::hexStringToValtype("416fd75159ab86688e9a8300000000");
-    valtype x3 = WizData::hexStringToValtype("d5fdcc541e25de1c7a5addedf24858b8");
-    valtype x4 = WizData::hexStringToValtype("bb665c9f36ef744ee42c316022c90f9b");
+    //valtype x1 = WizData::hexStringToValtype("4860eb18bf1b1620e37e9490fc8a427514");
+    //valtype x2 = WizData::hexStringToValtype("416fd75159ab86688e9a8300000000");
+    //valtype x3 = WizData::hexStringToValtype("d5fdcc541e25de1c7a5addedf24858b8");
+    //valtype x4 = WizData::hexStringToValtype("bb665c9f36ef744ee42c316022c90f9b");
     
-    valtype prevHash;
-    prevHash.insert(prevHash.begin(), x1.begin(),x1.end());
-    prevHash.insert(prevHash.begin() + x1.size() , x2.begin(),x2.end());
-    valtype merkeRoot;
-    merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
-    merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
+    //valtype prevHash;
+    //prevHash.insert(prevHash.begin(), x1.begin(),x1.end());
+    //prevHash.insert(prevHash.begin() + x1.size() , x2.begin(),x2.end());
+    // valtype merkeRoot;
+    //merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
+    //merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
     
-    int tsar[] = {0,0,0,0,0,0,0,0,0,0,0};
+    //int tsar[] = {0,0,0,0,0,0,0,0,0,0,0};
     
-    initHeaderSyncFromHeightWithComponents(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024, 486604799, 1231006505, tsar);
+    //initHeaderSyncFromHeightWithComponents(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024, 486604799, 1231006505, tsar);
    
     //std::cout << initHeaderSyncGenesis() << std::endl;
     
-    test_submit_header_1();
-    test_submit_header_2();
-    test_submit_header_3();
+    //test_submit_header_1();
+    //test_submit_header_2();
+    //test_submit_header_3();
         
     std::string s;
     std::cin >> s;
