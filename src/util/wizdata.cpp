@@ -31,19 +31,19 @@ uint8_t *WizData::LEtoUint8(valtype in){
 
 uint16_t *WizData::LEtoUint16(valtype in){
     uint16_t *val = new uint16_t(0);
-    for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256,i); }
+    for (int i = 0; i < in.size(); i++) { *val+= (uint16_t)in[i] * pow(256,i); }
     return val;
 }
 
 uint32_t *WizData::LEtoUint32(valtype in){
     uint32_t *val = new uint32_t(0);
-    for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256,i); }
+    for (int i = 0; i < in.size(); i++) { *val+= (uint32_t)in[i] * pow(256,i); }
     return val;
 }
 
 uint64_t *WizData::LEtoUint64(valtype in){
-    uint64_t *val = 0;
-    for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256, i); }
+    uint64_t *val = new uint64_t(0);
+    for (int i = 0; i < in.size(); i++) { *val+= (uint64_t)in[i] * pow(256, i); }
     return val;
 }
 

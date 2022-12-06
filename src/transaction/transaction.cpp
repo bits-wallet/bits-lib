@@ -16,6 +16,7 @@ valtype splitValtypeSet(valtype *in, int startIndex, int size){
 
 Transaction::Transaction(valtype rawTx){
     std::vector<TxIn> inputs;
+    std::vector<TxOut> outputs;
     
     int elapsedBytes = 0;
     bool decodeSuccess = true;
@@ -56,7 +57,6 @@ Transaction::Transaction(valtype rawTx){
     }
    
     for(int i = 0; i < numInputs; i++){
-        
         valtype prevOutHash = splitValtypeSet(&rawTx, elapsedBytes, 32); elapsedBytes += 32;
         valtype vVoutIndex = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
     
@@ -88,7 +88,67 @@ Transaction::Transaction(valtype rawTx){
         inputs.push_back(newTxIn);
     }
     
-    this->version = *WizData::LEtoUint32(versionBytes);
-    this->inputs = inputs;
+    valtype vNumOutputsFirstByte = splitValtypeSet(&rawTx, elapsedBytes, 1); elapsedBytes++;
+    valtype vNumOutputsLen;
+    uint32_t numOutputs;
+    
+    if(vNumInputsFirstByte[0] == 0xFD){
+        vNumOutputsLen = splitValtypeSet(&rawTx, elapsedBytes, 2); elapsedBytes += 2;
+        numOutputs = *WizData::LEtoUint32(vNumInputsLen);
+    }
+    else if(vNumInputsFirstByte[0] == 0xFE){
+        vNumOutputsLen = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+        numOutputs = *WizData::LEtoUint32(vNumOutputsLen);
+    }
+    else if(vNumInputsFirstByte[0] == 0xFF){
+        vNumOutputsLen = splitValtypeSet(&rawTx, elapsedBytes, 8); elapsedBytes += 8;
+        numOutputs = *WizData::LEtoUint32(vNumOutputsLen);
+    }
+    else {
+        numOutputs = *WizData::LEtoUint32(vNumOutputsFirstByte);
+    }
+    
+    for(int i = 0; i < numOutputs; i++){
+        valtype vAmount = splitValtypeSet(&rawTx, elapsedBytes, 8); elapsedBytes += 8;
+        std::cout << "hadi " << vAmount.size() << std::endl;
+        uint64_t amount = *WizData::LEtoUint64(vAmount);
+        std::cout << "had2i " << std::endl;
+        
+        valtype vScriptPubkeyLenFirstByte = splitValtypeSet(&rawTx, elapsedBytes, 1); elapsedBytes++;
+        valtype vScriptPubkeyLen; uint32_t scriptPubkeyLen;
+        
+        if(vScriptPubkeyLenFirstByte[0] == 0xFD){
+            vScriptPubkeyLen = splitValtypeSet(&rawTx, elapsedBytes, 2); elapsedBytes += 2;
+            scriptPubkeyLen = *WizData::LEtoUint32(vScriptPubkeyLen);
+        }
+        else if(vScriptPubkeyLenFirstByte[0] == 0xFE){
+            vScriptPubkeyLen = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+            scriptPubkeyLen = *WizData::LEtoUint32(vScriptPubkeyLen);
+        }
+        else if(vScriptPubkeyLenFirstByte[0] == 0xFF){
+            vScriptPubkeyLen = splitValtypeSet(&rawTx, elapsedBytes, 8); elapsedBytes += 8;
+            scriptPubkeyLen = *WizData::LEtoUint32(vScriptPubkeyLen);
+        }
+        else {
+            scriptPubkeyLen = *WizData::LEtoUint32(vScriptPubkeyLenFirstByte);
+        }
+        
+        valtype scriptPubkey = splitValtypeSet(&rawTx, elapsedBytes, scriptPubkeyLen); elapsedBytes += scriptPubkeyLen;
+        
+        TxOut newTxOut(amount, scriptPubkey);
+        outputs.push_back(newTxOut);
+    }
+    
+    valtype vLocktime = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+    
+    if(elapsedBytes != rawTx.size())
+        decodeSuccess = false;
+    
+    if(decodeSuccess){
+        this->version = *WizData::LEtoUint32(versionBytes);
+        this->inputs = inputs;
+        this->outputs = outputs;
+        this->locktime = *WizData::LEtoUint32(vLocktime);
+    }
 }
 

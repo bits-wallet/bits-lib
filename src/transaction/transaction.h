@@ -22,9 +22,10 @@ public:
 };
 
 class TxOut {
-private:
+public:
     uint64_t amount;
     valtype scriptPubkey;
+    TxOut(uint64_t amount, valtype scriptPubkey): amount(amount), scriptPubkey(scriptPubkey) {}
 };
 
 class WitSlot {

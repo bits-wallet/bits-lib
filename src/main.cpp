@@ -173,6 +173,16 @@ int main() {
     std::cout << (int)(tx.inputs[0].prevOutHash[31]) << std::endl;
         
     std::cout << (int)(tx.inputs[0].prevOutHash.size()) << std::endl;
+    std::cout << "sdc" << std::endl;
+    std::cout << (uint64_t)(tx.outputs[0].amount) << std::endl;
+    
+    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[0] << std::endl;
+    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[1] << std::endl;
+    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[2] << std::endl;
+    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[3] << std::endl;
+    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey).size() << std::endl;
+    
+    
     std::string s;
     std::cin >> s;
     
