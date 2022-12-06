@@ -223,5 +223,3 @@ valtype Header::getHeaderHash(uint64_t height) {
 uint32_t Header::getHeaderHeight(uint64_t height) {
     return ((Header*)Header::headerAddresses[height - HeaderSync::startingSyncHeight])->height;
 }
-
-

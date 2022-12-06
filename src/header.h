@@ -9,7 +9,7 @@
 #define header_h
 
 #include <stdio.h>
-#include "utils/wizdata.h"
+#include "util/wizdata.h"
 #include "crypto/sha256.h"
 #include "hardcoded.h"
 

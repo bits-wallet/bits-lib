@@ -5,8 +5,8 @@
 #include "sha256.h"
 #include <assert.h>
 #include <string.h>
-#include "../utils/common.h"
-#include "../utils/cpuid.h"
+#include "../util/common.h"
+#include "../util/cpuid.h"
 
 
 

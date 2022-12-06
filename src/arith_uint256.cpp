@@ -6,7 +6,7 @@
 #include "arith_uint256.h"
 
 #include "uint256.h"
-#include "utils/common.h"
+#include "util/common.h"
 
 
 template <unsigned int BITS>

@@ -5,7 +5,7 @@
 
 #include "uint256.h"
 
-#include "utils/strencodings.h"
+#include "util/strencodings.h"
 
 #include <string.h>
 

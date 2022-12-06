@@ -13,7 +13,7 @@
 #include <vector>
 #include <cmath>
 #include <sstream>
-#include "../utils/common.h"
+#include "../util/common.h"
 #include "../uint256.h"
 
 typedef std::vector<unsigned char> valtype;

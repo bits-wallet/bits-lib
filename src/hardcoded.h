@@ -8,7 +8,7 @@
 #ifndef hardcoded_h
 #define hardcoded_h
 
-#include "utils/wizdata.h"
+#include "util/wizdata.h"
 
 class Hardcoded {
 public:
