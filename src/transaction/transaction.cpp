@@ -20,6 +20,9 @@ Transaction::Transaction(valtype rawTx){
     
     int elapsedBytes = 0;
     bool decodeSuccess = true;
+    bool witnessSer = true;
+    
+    valtype vLocktime;
     
     valtype versionBytes = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
     valtype marker = splitValtypeSet(&rawTx, elapsedBytes, 1);
@@ -34,6 +37,7 @@ Transaction::Transaction(valtype rawTx){
     }
     else {
         //nonwit
+        witnessSer = false;
     }
     
     valtype vNumInputsFirstByte = splitValtypeSet(&rawTx, elapsedBytes, 1); elapsedBytes++;
@@ -139,7 +143,13 @@ Transaction::Transaction(valtype rawTx){
         outputs.push_back(newTxOut);
     }
     
-    valtype vLocktime = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+    if(!witnessSer) {
+        splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+    }
+    else {
+        //witness ser
+    }
+        
     
     if(elapsedBytes != rawTx.size())
         decodeSuccess = false;
