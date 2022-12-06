@@ -15,12 +15,12 @@ valtype splitValtypeSet(valtype *in, int startIndex, int size){
 }
 
 Transaction::Transaction(valtype rawTx){
+    std::vector<TxIn> inputs;
+    
     int elapsedBytes = 0;
     bool decodeSuccess = true;
     
     valtype versionBytes = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
-    this->version = *WizData::LEtoUint32(versionBytes);
-    
     valtype marker = splitValtypeSet(&rawTx, elapsedBytes, 1);
     
     if(marker[0] == 0x00){
@@ -84,6 +84,11 @@ Transaction::Transaction(valtype rawTx){
         valtype scriptSig = splitValtypeSet(&rawTx, elapsedBytes, scriptsigLen); elapsedBytes += scriptsigLen;
         valtype vSequence = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
         uint32_t sequence = *WizData::LEtoUint32(vSequence);
+        TxIn newTxIn(prevOutHash, voutIndex, scriptSig, sequence);
+        inputs.push_back(newTxIn);
     }
+    
+    this->version = *WizData::LEtoUint32(versionBytes);
+    this->inputs = inputs;
 }
 

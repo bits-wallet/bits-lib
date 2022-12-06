@@ -7,7 +7,7 @@
 #include "header.h"
 #include "arith_uint256.h"
 #include <chrono>
-
+#include "transaction/transaction.h"
 
 using namespace std::chrono;
 
@@ -129,17 +129,50 @@ int main() {
     //test_submit_header_2();
     //test_submit_header_3();
     
-    valtype dd;
-    dd.push_back(0x00);
-    dd.push_back(0xbb);
-    dd.push_back(0xcc);
-    dd.push_back(0xdd);
+    valtype x1 = WizData::hexStringToValtype("01000000010000000000000000000000");
+    valtype x2 = WizData::hexStringToValtype("00000000000000000000000000000000");
+    valtype x3 = WizData::hexStringToValtype("0000000000ffffffff4d04ffff001d01");
+    valtype x4 = WizData::hexStringToValtype("04455468652054696d65732030332f4a");
+    valtype x5 = WizData::hexStringToValtype("616e2f32303039204368616e63656c6c");
+    valtype x6 = WizData::hexStringToValtype("6f72206f6e206272696e6b206f662073");
+    valtype x7 = WizData::hexStringToValtype("65636f6e64206261696c6f757420666f");
+    valtype x8 = WizData::hexStringToValtype("722062616e6b73ffffffff0100f2052a");
+    valtype x9 = WizData::hexStringToValtype("01000000434104678afdb0fe55482719");
+    valtype x10 = WizData::hexStringToValtype("67f1a67130b7105cd6a828e03909a679");
+    valtype x11 = WizData::hexStringToValtype("62e0ea1f61deb649f6bc3f4cef38c4f3");
+    valtype x12 = WizData::hexStringToValtype("5504e51ec112de5c384df7ba0b8d578a");
+    valtype x13 = WizData::hexStringToValtype("4c702b6bf11d5fac00000000");
     
-    valtype ss;
-    //ss.insert(ss.begin(), dd.begin(), dd.begin() + 1);
+    valtype rawtx;
+    rawtx.insert(rawtx.begin(), x1.begin(),x1.end());
+    rawtx.insert(rawtx.end(), x2.begin(),x2.end());
+    rawtx.insert(rawtx.end(), x3.begin(),x3.end());
+    rawtx.insert(rawtx.end(), x4.begin(),x4.end());
+    rawtx.insert(rawtx.end(), x5.begin(),x5.end());
+    rawtx.insert(rawtx.end(), x6.begin(),x6.end());
+    rawtx.insert(rawtx.end(), x7.begin(),x7.end());
+    rawtx.insert(rawtx.end(), x8.begin(),x8.end());
+    rawtx.insert(rawtx.end(), x9.begin(),x9.end());
+    rawtx.insert(rawtx.end(), x10.begin(),x10.end());
+    rawtx.insert(rawtx.end(), x11.begin(),x11.end());
+    rawtx.insert(rawtx.end(), x12.begin(),x12.end());
+    rawtx.insert(rawtx.end(), x13.begin(),x13.end());
     
-    std::cout << (int)dd[0] << std::endl;
+    Transaction tx(rawtx);
+    
+    std::cout << tx.version << std::endl;
+    std::cout << tx.inputs[0].voutIndex << std::endl;
+    std::cout << tx.inputs[0].sequence << std::endl;
+    std::cout << tx.inputs.size() << std::endl;
+    std::cout << tx.inputs[0].scriptSig.size() << std::endl;
+    
+    std::cout << (int)(tx.inputs[0].prevOutHash[0]) << std::endl;
+    std::cout << (int)(tx.inputs[0].prevOutHash[1]) << std::endl;
+    std::cout << (int)(tx.inputs[0].prevOutHash[2]) << std::endl;
+    std::cout << (int)(tx.inputs[0].prevOutHash[30]) << std::endl;
+    std::cout << (int)(tx.inputs[0].prevOutHash[31]) << std::endl;
         
+    std::cout << (int)(tx.inputs[0].prevOutHash.size()) << std::endl;
     std::string s;
     std::cin >> s;
     

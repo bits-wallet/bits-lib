@@ -12,11 +12,13 @@
 #include "../util/wizdata.h"
 
 class TxIn {
-private:
+public:
     valtype prevOutHash;
     uint32_t voutIndex;
     valtype scriptSig;
     uint32_t sequence;
+    TxIn(valtype prevOutHash, uint32_t voutIndex, valtype scriptSig, uint32_t sequence):
+    prevOutHash(prevOutHash), voutIndex(voutIndex), scriptSig(scriptSig), sequence(sequence){}
 };
 
 class TxOut {
@@ -31,7 +33,7 @@ private:
 };
 
 class Transaction {
-private:
+public:
     valtype txid;
     valtype wtxid;
     bool isWitnessSer;
