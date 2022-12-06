@@ -5,13 +5,11 @@
 //  Created by Burak on 6.12.2022.
 //
 
-#ifndef transaction_hp
+#ifndef transaction_h
 #define transaction_h
 
 #include <stdio.h>
 #include "../util/wizdata.h"
-
-
 
 class TxIn {
 private:
@@ -34,12 +32,17 @@ private:
 
 class Transaction {
 private:
-    bool isWitnessSerialization;
+    valtype txid;
+    valtype wtxid;
+    bool isWitnessSer;
     u_int32_t version;
     std::vector<TxIn> inputs;
     std::vector<TxOut> outputs;
     std::vector<WitSlot> witness;
     u_int32_t locktime;
+public:
+    Transaction(valtype rawTx);
 };
 
 #endif /* transaction_h */
+

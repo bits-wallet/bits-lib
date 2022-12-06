@@ -4,9 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "uint256.h"
-
 #include "util/strencodings.h"
-
 #include <string.h>
 
 template <unsigned int BITS>

@@ -23,6 +23,18 @@ valtype WizData::buffer32ToValtype(unsigned char *buffer){
     return val;
 }
 
+uint8_t *WizData::LEtoUint8(valtype in){
+    uint8_t *val = new uint8_t(0);
+    *val = (int)in[0];
+    return val;
+}
+
+uint16_t *WizData::LEtoUint16(valtype in){
+    uint16_t *val = new uint16_t(0);
+    for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256,i); }
+    return val;
+}
+
 uint32_t *WizData::LEtoUint32(valtype in){
     uint32_t *val = new uint32_t(0);
     for (int i = 0; i < in.size(); i++) { *val+= (int)in[i] * pow(256,i); }
