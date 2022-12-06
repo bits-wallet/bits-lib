@@ -129,7 +129,16 @@ int main() {
     //test_submit_header_2();
     //test_submit_header_3();
     
-
+    valtype dd;
+    dd.push_back(0x00);
+    dd.push_back(0xbb);
+    dd.push_back(0xcc);
+    dd.push_back(0xdd);
+    
+    valtype ss;
+    //ss.insert(ss.begin(), dd.begin(), dd.begin() + 1);
+    
+    std::cout << (int)dd[0] << std::endl;
         
     std::string s;
     std::cin >> s;

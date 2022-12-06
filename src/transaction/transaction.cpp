@@ -9,7 +9,8 @@
 
 valtype splitValtypeSet(valtype *in, int startIndex, int size){
     valtype returnValType;
-    returnValType.insert(returnValType.begin(), in->begin() + startIndex, in->begin() + startIndex + size);
+    if(size > 0)
+        returnValType.insert(returnValType.begin(), in->begin() + startIndex, in->begin() + startIndex + size);
     return returnValType;
 }
 
