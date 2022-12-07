@@ -22,8 +22,6 @@ Transaction::Transaction(valtype rawTx){
     bool decodeSuccess = true;
     bool witnessSer = true;
     
-    valtype vLocktime;
-    
     valtype versionBytes = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
     valtype marker = splitValtypeSet(&rawTx, elapsedBytes, 1);
     
@@ -197,7 +195,7 @@ Transaction::Transaction(valtype rawTx){
         } //input times
     }
     
-    vLocktime = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+    valtype vLocktime = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
     
     if(elapsedBytes != rawTx.size())
         decodeSuccess = false;
