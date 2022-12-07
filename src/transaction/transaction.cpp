@@ -19,6 +19,7 @@ Transaction::Transaction(valtype rawTx){
     std::vector<TxOut> outputs;
     
     int elapsedBytes = 0;
+    int elapsedBytesUntilWitness = 0;
     bool decodeSuccess = true;
     bool witnessSer = true;
     
@@ -140,6 +141,7 @@ Transaction::Transaction(valtype rawTx){
     }
     
     if(witnessSer) {
+        elapsedBytesUntilWitness = elapsedBytes;
         //witness ser
         for (int i = 0; i < inputs.size(); i++) {
             valtype vThisInElementCountFirstByte = splitValtypeSet(&rawTx, elapsedBytes, 1); elapsedBytes++;
@@ -186,12 +188,29 @@ Transaction::Transaction(valtype rawTx){
                 inputElements.push_back(element);
             }
  
-            if(inputElements.size() > 0)
                inputs[i].witness = inputElements;
 
         } //input times
     }
     valtype vLocktime = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+    
+    valtype *wtxid = new valtype(32);
+    CSHA256().Write(rawTx.data(), rawTx.size()).Finalize((*wtxid).data());
+    CSHA256().Write((*wtxid).data(), (*wtxid).size()).Finalize((*wtxid).data());
+    
+    valtype baseRawTx;
+    baseRawTx.insert(baseRawTx.begin(), versionBytes.begin(), versionBytes.end());
+    
+    int rawTxBeginOffset = 4;
+    if(witnessSer)
+        rawTxBeginOffset = 6;
+    baseRawTx.insert(baseRawTx.end(), rawTx.begin() + rawTxBeginOffset, rawTx.begin() + elapsedBytesUntilWitness);
+    baseRawTx.insert(baseRawTx.end(), vLocktime.begin(), vLocktime.end());
+    
+    std::cout << "xxd " << baseRawTx.size() << std::endl;
+    valtype *txid = new valtype(32);
+    CSHA256().Write(baseRawTx.data(), baseRawTx.size()).Finalize((*txid).data());
+    CSHA256().Write((*txid).data(), (*txid).size()).Finalize((*txid).data());
     
     if(elapsedBytes != rawTx.size())
         decodeSuccess = false;
@@ -201,6 +220,8 @@ Transaction::Transaction(valtype rawTx){
         this->inputs = inputs;
         this->outputs = outputs;
         this->locktime = *WizData::LEtoUint32(vLocktime);
+        this->txid = *txid;
+        this->wtxid = *wtxid;
     }
 }
 

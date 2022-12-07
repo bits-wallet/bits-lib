@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 #include "../util/wizdata.h"
+#include "../crypto/sha256.h"
+
 
 class TxIn {
 public:
@@ -33,7 +35,6 @@ class Transaction {
 public:
     valtype txid;
     valtype wtxid;
-    bool isWitnessSer;
     u_int32_t version;
     std::vector<TxIn> inputs;
     std::vector<TxOut> outputs;
