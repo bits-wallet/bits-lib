@@ -112,9 +112,7 @@ Transaction::Transaction(valtype rawTx){
     
     for(int i = 0; i < numOutputs; i++){
         valtype vAmount = splitValtypeSet(&rawTx, elapsedBytes, 8); elapsedBytes += 8;
-        std::cout << "hadi " << vAmount.size() << std::endl;
         uint64_t amount = *WizData::LEtoUint64(vAmount);
-        std::cout << "had2i " << std::endl;
         
         valtype vScriptPubkeyLenFirstByte = splitValtypeSet(&rawTx, elapsedBytes, 1); elapsedBytes++;
         valtype vScriptPubkeyLen; uint32_t scriptPubkeyLen;
@@ -144,10 +142,8 @@ Transaction::Transaction(valtype rawTx){
     if(witnessSer) {
         //witness ser
         for (int i = 0; i < inputs.size(); i++) {
-            
             valtype vThisInElementCountFirstByte = splitValtypeSet(&rawTx, elapsedBytes, 1); elapsedBytes++;
             valtype vThisInElementCount; uint32_t thisInElementCount;
-            
             if(vThisInElementCountFirstByte[0] == 0xFD){
                 vThisInElementCount = splitValtypeSet(&rawTx, elapsedBytes, 2); elapsedBytes += 2;
                 thisInElementCount = *WizData::LEtoUint32(vThisInElementCount);
@@ -163,7 +159,6 @@ Transaction::Transaction(valtype rawTx){
             else {
                 thisInElementCount = *WizData::LEtoUint32(vThisInElementCountFirstByte);
             }
-            
             std::vector<valtype> inputElements;
             
             for (int i = 0; i < thisInElementCount; i++) {
@@ -190,11 +185,12 @@ Transaction::Transaction(valtype rawTx){
                     element = splitValtypeSet(&rawTx, elapsedBytes, elementLen); elapsedBytes += elementLen;
                 inputElements.push_back(element);
             }
-            
-            this->inputs[i].witness = inputElements;
+ 
+            if(inputElements.size() > 0)
+               inputs[i].witness = inputElements;
+
         } //input times
     }
-    
     valtype vLocktime = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
     
     if(elapsedBytes != rawTx.size())

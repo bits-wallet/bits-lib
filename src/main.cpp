@@ -9,6 +9,9 @@
 #include <chrono>
 #include "transaction/transaction.h"
 
+
+
+
 using namespace std::chrono;
 
 uint32_t getCurrentHeaderSyncHeight() {
@@ -105,6 +108,26 @@ void test_submit_header_3() {
     std::cout << "submit: " << success << std::endl;
     }
 
+valtype stringToValtype(std::string const& hex) {
+    
+    std::string newStr = "";
+    
+    for (int i = 0; i < (hex.size()/2); i++) {
+        newStr += hex.substr((i*2),2) + " ";
+    }
+    
+    std::cout << "newStr: " << newStr << std::endl;
+    
+    std::string cipher = newStr;
+    
+    
+    std::istringstream strm{cipher};
+    strm >> std::hex;
+
+    return {std::istream_iterator<int>{strm}, {}};
+}
+
+
 int main() {
     
     //valtype x1 = WizData::hexStringToValtype("4860eb18bf1b1620e37e9490fc8a427514");
@@ -129,63 +152,20 @@ int main() {
     //test_submit_header_2();
     //test_submit_header_3();
     
-    valtype x1 = WizData::hexStringToValtype("01000000010000000000000000000000");
-    valtype x2 = WizData::hexStringToValtype("00000000000000000000000000000000");
-    valtype x3 = WizData::hexStringToValtype("0000000000ffffffff4d04ffff001d01");
-    valtype x4 = WizData::hexStringToValtype("04455468652054696d65732030332f4a");
-    valtype x5 = WizData::hexStringToValtype("616e2f32303039204368616e63656c6c");
-    valtype x6 = WizData::hexStringToValtype("6f72206f6e206272696e6b206f662073");
-    valtype x7 = WizData::hexStringToValtype("65636f6e64206261696c6f757420666f");
-    valtype x8 = WizData::hexStringToValtype("722062616e6b73ffffffff0100f2052a");
-    valtype x9 = WizData::hexStringToValtype("01000000434104678afdb0fe55482719");
-    valtype x10 = WizData::hexStringToValtype("67f1a67130b7105cd6a828e03909a679");
-    valtype x11 = WizData::hexStringToValtype("62e0ea1f61deb649f6bc3f4cef38c4f3");
-    valtype x12 = WizData::hexStringToValtype("5504e51ec112de5c384df7ba0b8d578a");
-    valtype x13 = WizData::hexStringToValtype("4c702b6bf11d5fac00000000");
-    
-    valtype rawtx;
-    rawtx.insert(rawtx.begin(), x1.begin(),x1.end());
-    rawtx.insert(rawtx.end(), x2.begin(),x2.end());
-    rawtx.insert(rawtx.end(), x3.begin(),x3.end());
-    rawtx.insert(rawtx.end(), x4.begin(),x4.end());
-    rawtx.insert(rawtx.end(), x5.begin(),x5.end());
-    rawtx.insert(rawtx.end(), x6.begin(),x6.end());
-    rawtx.insert(rawtx.end(), x7.begin(),x7.end());
-    rawtx.insert(rawtx.end(), x8.begin(),x8.end());
-    rawtx.insert(rawtx.end(), x9.begin(),x9.end());
-    rawtx.insert(rawtx.end(), x10.begin(),x10.end());
-    rawtx.insert(rawtx.end(), x11.begin(),x11.end());
-    rawtx.insert(rawtx.end(), x12.begin(),x12.end());
-    rawtx.insert(rawtx.end(), x13.begin(),x13.end());
+
+    valtype rawtx = stringToValtype("01000000000103d6b2fd4aa08561fc5ac2bac3f98e659d4dee4348d951bc9f4020807c9699640f000000006a473044022047d794bd53a535f92ca319506f3ad8c3cb4b5f264d3678d7c49819f6a33545d202202f93978659eeeabd6a012fa66767ef546d83e8925c5cbf127d11c2ff15ca34b9012102cdee8333c31afd53bb47a2485d19547de52737309c9ec20ff8de47e17e681f32ffffffff64639a7c7cdd19922bd1204b60672ea7d23e0a31d5a20e2f370cc4330120eb320000000000ffffffff198027c781754935d9ed9d40bb6e36a35a5a1d7bdcb542375ddb0ec43b724a5f0000000000ffffffff02814c0000000000001600146eb836821861fbb534c19e9026f9613f6be2dd1e220202000000000017a914bd799d6e1ae8280d6ce762b4669780b75d323f6987000247304402200f6f4de73bf214a33eeb00bd88601f199ccb4d6d67d7c35a37198bcce5738f11022004bcec7c5a046052359821dcbb6da1b28d8ea3c957cf75ce4fd159cb706fbfe50121025217ed98be4666c35c3a19ad17e7dc81d006576f4381a3cfc4621b41dbb623e9024730440220462831c7cc525f5c0ea5fef156f7a00f2409f899b66af13c4868e7d5ddbd372202207e9fac0b5bfcbb8c69d17f2157e5dd7fa053a8279eb64bbf7c7038fdbfdec9a7012103514042cf576ffd3ac6c8b120a812357b9ce45db3fa06e54113fac534a7a0616e00000000");
+
+    std::cout << rawtx.size() << std::endl;
     
     Transaction tx(rawtx);
     
     std::cout << tx.version << std::endl;
-    std::cout << tx.inputs[0].voutIndex << std::endl;
-    std::cout << tx.inputs[0].sequence << std::endl;
-    std::cout << tx.inputs.size() << std::endl;
-    std::cout << tx.inputs[0].scriptSig.size() << std::endl;
-    
-    std::cout << (int)(tx.inputs[0].prevOutHash[0]) << std::endl;
-    std::cout << (int)(tx.inputs[0].prevOutHash[1]) << std::endl;
-    std::cout << (int)(tx.inputs[0].prevOutHash[2]) << std::endl;
-    std::cout << (int)(tx.inputs[0].prevOutHash[30]) << std::endl;
-    std::cout << (int)(tx.inputs[0].prevOutHash[31]) << std::endl;
-        
-    std::cout << (int)(tx.inputs[0].prevOutHash.size()) << std::endl;
-    std::cout << "sdc" << std::endl;
-    std::cout << (uint64_t)(tx.outputs[0].amount) << std::endl;
-    
-    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[0] << std::endl;
-    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[1] << std::endl;
-    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[2] << std::endl;
-    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[3] << std::endl;
-    std::cout << (uint64_t)(tx.outputs[0].scriptPubkey).size() << std::endl;
-    
-    std::cout << (uint64_t)(tx.inputs[0].witness.size()) << std::endl;
-    
-    
-    
+   
+    std::cout << (int)tx.inputs[1].witness[0][0] << std::endl;
+    std::cout << (int)tx.inputs[1].witness[0][1] << std::endl;
+    std::cout << (int)tx.inputs[1].witness[0][2] << std::endl;
+    std::cout << (int)tx.inputs[1].witness[0][3] << std::endl;
+
     std::string s;
     std::cin >> s;
     
