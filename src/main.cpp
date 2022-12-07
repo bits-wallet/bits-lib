@@ -182,6 +182,9 @@ int main() {
     std::cout << (uint64_t)(tx.outputs[0].scriptPubkey)[3] << std::endl;
     std::cout << (uint64_t)(tx.outputs[0].scriptPubkey).size() << std::endl;
     
+    std::cout << (uint64_t)(tx.inputs[0].witness.size()) << std::endl;
+    
+    
     
     std::string s;
     std::cin >> s;

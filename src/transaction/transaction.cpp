@@ -143,13 +143,61 @@ Transaction::Transaction(valtype rawTx){
         outputs.push_back(newTxOut);
     }
     
-    if(!witnessSer) {
-        splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
-    }
-    else {
+    if(witnessSer) {
         //witness ser
+        for (int i = 0; i < inputs.size(); i++) {
+            
+            valtype vThisInElementCountFirstByte = splitValtypeSet(&rawTx, elapsedBytes, 1); elapsedBytes++;
+            valtype vThisInElementCount; uint32_t thisInElementCount;
+            
+            if(vThisInElementCountFirstByte[0] == 0xFD){
+                vThisInElementCount = splitValtypeSet(&rawTx, elapsedBytes, 2); elapsedBytes += 2;
+                thisInElementCount = *WizData::LEtoUint32(vThisInElementCount);
+            }
+            else if(vThisInElementCountFirstByte[0] == 0xFE){
+                vThisInElementCount = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+                thisInElementCount = *WizData::LEtoUint32(vThisInElementCount);
+            }
+            else if(vThisInElementCountFirstByte[0] == 0xFF){
+                vThisInElementCount = splitValtypeSet(&rawTx, elapsedBytes, 8); elapsedBytes += 8;
+                thisInElementCount = *WizData::LEtoUint32(vThisInElementCount);
+            }
+            else {
+                thisInElementCount = *WizData::LEtoUint32(vThisInElementCountFirstByte);
+            }
+            
+            std::vector<valtype> inputElements;
+            
+            for (int i = 0; i < thisInElementCount; i++) {
+                valtype element;
+                valtype vElementLenFirstByte = splitValtypeSet(&rawTx, elapsedBytes, 1); elapsedBytes++;
+                valtype vElementLen; uint32_t elementLen;
+                
+                if(vElementLenFirstByte[0] == 0xFD){
+                    vElementLen = splitValtypeSet(&rawTx, elapsedBytes, 2); elapsedBytes += 2;
+                    elementLen = *WizData::LEtoUint32(vElementLen);
+                }
+                else if(vElementLenFirstByte[0] == 0xFE){
+                    vElementLen = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
+                    elementLen = *WizData::LEtoUint32(vElementLen);
+                }
+                else if(vElementLenFirstByte[0] == 0xFF){
+                    vElementLen = splitValtypeSet(&rawTx, elapsedBytes, 8); elapsedBytes += 8;
+                    elementLen = *WizData::LEtoUint32(vElementLen);
+                }
+                else {
+                    elementLen = *WizData::LEtoUint32(vElementLenFirstByte);
+                }
+                if(elementLen > 0)
+                    element = splitValtypeSet(&rawTx, elapsedBytes, elementLen); elapsedBytes += elementLen;
+                inputElements.push_back(element);
+            }
+            
+            this->inputs[i].witness = inputElements;
+        } //input times
     }
-        
+    
+    vLocktime = splitValtypeSet(&rawTx, elapsedBytes, 4); elapsedBytes += 4;
     
     if(elapsedBytes != rawTx.size())
         decodeSuccess = false;

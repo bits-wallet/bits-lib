@@ -17,6 +17,7 @@ public:
     uint32_t voutIndex;
     valtype scriptSig;
     uint32_t sequence;
+    std::vector<valtype> witness;
     TxIn(valtype prevOutHash, uint32_t voutIndex, valtype scriptSig, uint32_t sequence):
     prevOutHash(prevOutHash), voutIndex(voutIndex), scriptSig(scriptSig), sequence(sequence){}
 };
@@ -28,11 +29,6 @@ public:
     TxOut(uint64_t amount, valtype scriptPubkey): amount(amount), scriptPubkey(scriptPubkey) {}
 };
 
-class WitSlot {
-private:
-    std::vector<valtype> elements;
-};
-
 class Transaction {
 public:
     valtype txid;
@@ -41,7 +37,6 @@ public:
     u_int32_t version;
     std::vector<TxIn> inputs;
     std::vector<TxOut> outputs;
-    std::vector<WitSlot> witness;
     u_int32_t locktime;
 public:
     Transaction(valtype rawTx);
