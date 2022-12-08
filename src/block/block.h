@@ -16,7 +16,10 @@
 
 class Block {
 public:
-    Block(valtype vRawBlock, uint32_t height);
+    std::vector<Transaction> transactions;
+    Block() {};
+    void setBlock(std::vector<Transaction> transactions) { this->transactions = transactions; };
+    static Block submitNewBlock(valtype vRawBlock, uint32_t height);
 };
 
 #endif /* block_h */

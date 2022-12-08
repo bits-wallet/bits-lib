@@ -20,8 +20,7 @@ public:
     valtype scriptSig;
     uint32_t sequence;
     std::vector<valtype> witness;
-    TxIn(valtype prevOutHash, uint32_t voutIndex, valtype scriptSig, uint32_t sequence):
-    prevOutHash(prevOutHash), voutIndex(voutIndex), scriptSig(scriptSig), sequence(sequence){}
+    TxIn(valtype prevOutHash, uint32_t voutIndex, valtype scriptSig, uint32_t sequence): prevOutHash(prevOutHash), voutIndex(voutIndex), scriptSig(scriptSig), sequence(sequence) {}
 };
 
 class TxOut {
@@ -40,7 +39,7 @@ public:
     std::vector<TxOut> outputs;
     u_int32_t locktime;
 public:
-    Transaction(valtype rawTx);
+    Transaction(valtype txid, valtype wtxid, u_int32_t version, std::vector<TxIn> inputs, std::vector<TxOut> outputs, u_int32_t locktime);
 };
 
 #endif /* transaction_h */
