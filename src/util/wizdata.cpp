@@ -7,6 +7,13 @@
 
 #include "wizdata.h"
 
+valtype WizData::splitValtypeSet(valtype *in, int startIndex, int size){
+    valtype returnValType;
+    if(size > 0)
+        returnValType.insert(returnValType.begin(), in->begin() + startIndex, in->begin() + startIndex + size);
+    return returnValType;
+}
+
 valtype WizData::bufferAnySizeToValtype(unsigned char *buffer, int size){
     valtype val;
     for (int i = 0; i < size; i++) {
@@ -69,6 +76,24 @@ valtype *WizData::Uint32ToLE(uint32_t in) {
     returnVal->push_back(ptr[1]);
     returnVal->push_back(ptr[2]);
     returnVal->push_back(ptr[3]);
+    
+    delete ptr;
+    return returnVal;
+}
+
+valtype *WizData::Uint64ToLE(uint64_t in) {
+    unsigned char *ptr = new unsigned char;
+    WriteLE64(ptr,in);
+
+    valtype *returnVal = new valtype;
+    returnVal->push_back(ptr[0]);
+    returnVal->push_back(ptr[1]);
+    returnVal->push_back(ptr[2]);
+    returnVal->push_back(ptr[3]);
+    returnVal->push_back(ptr[4]);
+    returnVal->push_back(ptr[5]);
+    returnVal->push_back(ptr[6]);
+    returnVal->push_back(ptr[7]);
     
     delete ptr;
     return returnVal;

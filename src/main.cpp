@@ -8,11 +8,28 @@
 #include "arith_uint256.h"
 #include <chrono>
 #include "transaction/transaction.h"
-
-
-
+#include "block/block.h"
+#include "prover/prover.h"
 
 using namespace std::chrono;
+
+valtype stringToValtype(std::string const& hex) {
+    
+    std::string newStr = "";
+    
+    for (int i = 0; i < (hex.size()/2); i++) {
+        newStr += hex.substr((i*2),2) + " ";
+    }
+    
+    std::string cipher = newStr;
+    
+    
+    std::istringstream strm{cipher};
+    strm >> std::hex;
+
+    return {std::istream_iterator<int>{strm}, {}};
+}
+
 
 uint32_t getCurrentHeaderSyncHeight() {
     return HeaderSync::getSyncHeight();
@@ -48,19 +65,10 @@ bool initHeaderSyncFromHeightRaw(uint32_t startHeight, valtype rawHeader, uint32
 }
 
 void test_submit_header_1() {
-    valtype x1 = WizData::hexStringToValtype("6fe28c0ab6f1b372c1a6a246ae63f74f");
-    valtype x2 = WizData::hexStringToValtype("931e8365e15a089c68d6190000000000");
-    valtype x3 = WizData::hexStringToValtype("982051fd1e4ba744bbbe680e1fee1467");
-    valtype x4 = WizData::hexStringToValtype("7ba1a3c3540bf7b1cdb606e857233e0e");
     
-    valtype prevHash;
-    prevHash.insert(prevHash.begin(), x1.begin(),x1.end());
-    prevHash.insert(prevHash.begin() + x1.size() , x2.begin(),x2.end());
-    valtype merkeRoot;
-    merkeRoot.insert(merkeRoot.begin(), x3.begin(),x3.end());
-    merkeRoot.insert(merkeRoot.begin() + x3.size() , x4.begin(),x4.end());
+    valtype rawHeader = stringToValtype("010000006fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000982051fd1e4ba744bbbe680e1fee14677ba1a3c3540bf7b1cdb606e857233e0e61bc6649ffff001d01e36299");
 
-    Header *newHeader = new Header(1, prevHash, merkeRoot, 1231469665, 486604799, 2573394689);
+    Header *newHeader = new Header(rawHeader);
     bool success = (newHeader->height > 0);
     if (!success) delete newHeader;
     
@@ -108,32 +116,8 @@ void test_submit_header_3() {
     std::cout << "submit: " << success << std::endl;
     }
 
-valtype stringToValtype(std::string const& hex) {
-    
-    std::string newStr = "";
-    
-    for (int i = 0; i < (hex.size()/2); i++) {
-        newStr += hex.substr((i*2),2) + " ";
-    }
-    
-    std::cout << "newStr: " << newStr << std::endl;
-    
-    std::string cipher = newStr;
-    
-    
-    std::istringstream strm{cipher};
-    strm >> std::hex;
-
-    return {std::istream_iterator<int>{strm}, {}};
-}
-
-//bool submitRawBlock(unsigned char rawBlock[], uint32_t size, uint32_t height){
-bool submitRawBlock(valtype vRawBlock, uint32_t height){
-    
-    //valtype vRawBlock = WizData::bufferAnySizeToValtype(rawBlock, size);
-    std::cout << "begin." << std::endl;
-    
-    return 1;
+void submitRawBlock(valtype vRawBlock, uint32_t height){
+    Block block(vRawBlock, height);
 }
 
 
@@ -155,15 +139,19 @@ int main() {
     
     //initHeaderSyncFromHeightWithComponents(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024, 486604799, 1231006505, tsar);
    
-    initHeaderSyncGenesis();
-    
+    //initHeaderSyncGenesis();
     //test_submit_header_1();
+    
     //test_submit_header_2();
     //test_submit_header_3();
 
     valtype rawblock = stringToValtype("010000006fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000982051fd1e4ba744bbbe680e1fee14677ba1a3c3540bf7b1cdb606e857233e0e61bc6649ffff001d01e36299018601000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000");
     
-    submitRawBlock(rawblock, 1);
+    //Prover(rawblock, 1);
+    
+    ProverSync *ps = new ProverSync;
+    Prover(rawblock, 1);
+    
     
     std::string s;
     std::cin >> s;
