@@ -142,8 +142,9 @@ Transaction::Transaction(valtype rawTx){
         outputs.push_back(newTxOut);
     }
     
+    elapsedBytesUntilWitness = elapsedBytes;
+    
     if(witnessSer) {
-        elapsedBytesUntilWitness = elapsedBytes;
         //witness ser
         for (int i = 0; i < inputs.size(); i++) {
             valtype vThisInElementCountFirstByte = splitValtypeSet(pRawTx, elapsedBytes, 1); elapsedBytes++;
@@ -202,23 +203,26 @@ Transaction::Transaction(valtype rawTx){
     CSHA256().Write(wtxid->data(), wtxid->size()).Finalize(wtxid->data());
 
     valtype *baseRawTx = new valtype;
+    valtype *txid = new valtype(32);
 
+    if(witnessSer) {
     baseRawTx->insert(baseRawTx->begin(), versionBytes.begin(), versionBytes.end());
-
     int rawTxBeginOffset = 4;
     if(witnessSer)
         rawTxBeginOffset = 6;
     baseRawTx->insert(baseRawTx->end(), pRawTx->begin() + rawTxBeginOffset, pRawTx->begin() + elapsedBytesUntilWitness);
     baseRawTx->insert(baseRawTx->end(), vLocktime.begin(), vLocktime.end());
-
-    valtype *txid = new valtype(32);
+    
     CSHA256().Write(baseRawTx->data(), baseRawTx->size()).Finalize((*txid).data());
     CSHA256().Write((*txid).data(), (*txid).size()).Finalize((*txid).data());
-    delete baseRawTx;
-    
+    }
+    else {
+        txid = wtxid;
+    }
+
     if(elapsedBytes != rawTx.size())
         decodeSuccess = false;
-    
+
     if(decodeSuccess){
         this->version = *WizData::LEtoUint32(versionBytes);
         this->inputs = inputs;
@@ -227,5 +231,10 @@ Transaction::Transaction(valtype rawTx){
         this->txid = *txid;
         this->wtxid = *wtxid;
     }
+
+    delete baseRawTx; delete wtxid;
+    
+    if(witnessSer)
+        delete txid;
 }
 
