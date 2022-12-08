@@ -161,16 +161,16 @@ int main() {
     
     std::cout << tx.version << std::endl;
    
-    std::cout << (int)tx.inputs[1].witness[0][0] << std::endl;
-    std::cout << (int)tx.inputs[1].witness[0][1] << std::endl;
-    std::cout << (int)tx.inputs[1].witness[0][2] << std::endl;
-    std::cout << (int)tx.inputs[1].witness[0][3] << std::endl;
+    std::cout << (int)tx.inputs[0].witness[0][0] << std::endl;
+    std::cout << (int)tx.inputs[0].witness[0][1] << std::endl;
+    std::cout << (int)tx.inputs[0].witness[0][2] << std::endl;
+    std::cout << (int)tx.inputs[0].witness[0][3] << std::endl;
     
     std::cout << tx.inputs.size() << std::endl;
     std::cout << tx.outputs.size() << std::endl;
     std::cout << tx.locktime << std::endl;
     
-    std::cout << "wtx: " << (int)tx.txid[0] << std::endl;
+    std::cout << "wtx: " << (int)tx.txid[1] << std::endl;
     
 
     std::string s;

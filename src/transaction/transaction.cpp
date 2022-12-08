@@ -17,7 +17,7 @@ valtype splitValtypeSet(valtype *in, int startIndex, int size){
 Transaction::Transaction(valtype rawTx){
     std::vector<TxIn> inputs;
     std::vector<TxOut> outputs;
-    
+
     valtype *pRawTx = &rawTx;
     
     int elapsedBytes = 0;
