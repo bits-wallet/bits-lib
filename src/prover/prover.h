@@ -26,7 +26,7 @@ public:
 
 class Prover {
 public:
-    Prover(valtype vRawBlock, uint32_t height);
+    Prover(valtype vRawBlock);
 };
 
 #endif /* prover_h */

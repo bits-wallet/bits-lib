@@ -9,12 +9,8 @@
 
 
 
-Block Block::submitNewBlock(valtype vRawBlock, uint32_t height) {
+Block Block::submitNewBlock(valtype vRawBlock) {
     valtype *pVRawBlock = &vRawBlock;
-    
-    bool returnVal = true;
-    //valtype vRawBlock = WizData::bufferAnySizeToValtype(rawBlock, size);
-    std::cout << "begin." << std::endl;
     
     bool decodeSuccess = true;
     std::vector<Transaction> transactions;
@@ -265,7 +261,7 @@ Block Block::submitNewBlock(valtype vRawBlock, uint32_t height) {
            
             ///
         }
-    
+
     if(elapsedBytes != pVRawBlock->size())
         decodeSuccess = false;
     
@@ -273,13 +269,6 @@ Block Block::submitNewBlock(valtype vRawBlock, uint32_t height) {
     
     if(decodeSuccess)
         newBlock.setBlock(transactions);
-    
-    std::cout << "elapsedBytes " << elapsedBytes << std::endl;
-    
-   
-    std::cout << "block decodeSuccess " << decodeSuccess << std::endl;
-        
-    std::cout << "number of total txns " << transactions.size() << std::endl;
     
     return newBlock;
 }

@@ -11,13 +11,13 @@
 uint32_t ProverSync::proverHeight = 0;
 std::vector<UTXO> ProverSync::utxoSet;
 
-Prover::Prover(valtype vRawBlock, uint32_t height) {
+Prover::Prover(valtype vRawBlock) {
     
-    Block nb = Block::submitNewBlock(vRawBlock, height);
+    Block nb = Block::submitNewBlock(vRawBlock);
     std::vector<Transaction> transactions = nb.transactions;
     
     for (int i = 0; i < transactions.size(); i++) {
-        
+ 
         if(i > 0){
         // Remove tx_i inputs from the utxo set
         for (uint32_t k = 0; k < transactions[i].inputs.size(); k++) {
@@ -30,15 +30,12 @@ Prover::Prover(valtype vRawBlock, uint32_t height) {
     
         // Add tx_i outputs to the utxo set
         for (uint32_t k = 0; k < transactions[i].outputs.size(); k++) {
-            UTXO newUtxo(transactions[i].txid, *WizData::Uint32ToLE(k), *WizData::Uint32ToLE(height), *WizData::Uint64ToLE(transactions[i].outputs[k].amount), transactions[i].outputs[k].scriptPubkey);
+            UTXO newUtxo(transactions[i].txid, *WizData::Uint32ToLE(k), *WizData::Uint32ToLE(ProverSync::proverHeight + 1), *WizData::Uint64ToLE(transactions[i].outputs[k].amount), transactions[i].outputs[k].scriptPubkey);
             ProverSync::utxoSet.push_back(newUtxo);
         }
     }
     
-        ProverSync::proverHeight++; std::cout << "final proverHeight: " << ProverSync::proverHeight << std::endl;
-    
-    std::cout << "utxoset size: "<< ProverSync::utxoSet.size()<< std::endl;
-    
+        ProverSync::proverHeight++;
 }
 
 
