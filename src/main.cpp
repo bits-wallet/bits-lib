@@ -165,9 +165,12 @@ int main() {
     
     std::cout << "proverHeight: " << ProverSync::proverHeight << std::endl;
     
+    std::cout << "size: " << ProverSync::utxoSet.size() << std::endl;
+    
+    std::cout << "returnLeafHash: " << (int)ProverSync::utxoSet[0].returnLeafHash()[31] << std::endl;
+    
     std::string s;
     std::cin >> s;
     
 return 0;
 }
-
