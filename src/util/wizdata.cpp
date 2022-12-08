@@ -7,6 +7,14 @@
 
 #include "wizdata.h"
 
+valtype WizData::bufferAnySizeToValtype(unsigned char *buffer, int size){
+    valtype val;
+    for (int i = 0; i < size; i++) {
+        val.push_back(buffer[i]);
+    }
+    return val;
+}
+
 valtype WizData::buffer80ToValtype(unsigned char *buffer){
     valtype val;
     for (int i = 0; i < 80; i++) {
