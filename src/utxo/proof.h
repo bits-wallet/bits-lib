@@ -11,9 +11,7 @@
 #include <stdio.h>
 #include "utxo.h"
 
-class Proof {
-public:
-    static valtype exportUTXOsRaw (std::vector<UTXO> utxos);
+class Proof {    
 public:
     std::vector<UTXO> utxos;
     std::vector<uint8_t> serializedProof;

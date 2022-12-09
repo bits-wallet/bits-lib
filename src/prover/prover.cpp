@@ -17,6 +17,28 @@ Prover::Prover(valtype vRawBlock) {
     Block nb = Block::submitNewBlock(vRawBlock);
     std::vector<Transaction> transactions = nb.transactions;
     
+    
+    //1. Collect spending utxos
+    for (int i = 0; i < transactions.size(); i++) {
+        if(i > 0){
+        // Remove tx_i inputs from the utxo set
+        for (uint32_t k = 0; k < transactions[i].inputs.size(); k++) {
+            
+            std::pair<uint32_t, UTXO*> spendingUTXO;
+            spendingUTXO = ProverSync::returnUTXOFromOutpoint(transactions[i].inputs[k].prevOutHash, transactions[i].inputs[k].voutIndex);
+            this->spendings.push_back(*spendingUTXO.second);
+        }
+        }
+    }
+    
+
+    
+    
+    
+    
+    
+    
+    //2. UPDATE UTXO SET
     for (int i = 0; i < transactions.size(); i++) {
  
         if(i > 0){
@@ -52,4 +74,35 @@ std::pair<uint32_t, UTXO*> ProverSync::returnUTXOFromOutpoint(valtype prevHash, 
         }
     }
     return returnPair;
+}
+
+valtype Prover::exportSpendingsRaw() {
+    valtype returnValtype;
+    valtype numUTXOs = WizData::prefixCompactSizeCast((uint32_t)spendings.size());
+    returnValtype.insert(returnValtype.begin(), numUTXOs.begin(), numUTXOs.end());
+    
+    for(int i = 0; i < spendings.size(); i++) {
+        valtype UTXOfield;
+        valtype UTXOScriptPubkey = spendings[i].scriptPubkey;
+        valtype scriptPubkeyLen = WizData::prefixCompactSizeCast((uint32_t)(UTXOScriptPubkey.size()));
+        
+        valtype UTXOHeight = *WizData::Uint32ToLE(spendings[i].height);
+        UTXOfield.insert(UTXOfield.end(), UTXOHeight.begin(), UTXOHeight.end());
+        
+        valtype UTXOPrevHash = spendings[i].prevHash;
+        UTXOfield.insert(UTXOfield.end(), UTXOPrevHash.begin(), UTXOPrevHash.end());
+        
+        valtype UTXOVout = *WizData::Uint32ToLE(spendings[i].vout);
+        UTXOfield.insert(UTXOfield.end(), UTXOVout.begin(), UTXOVout.end());
+        
+        valtype UTXOValue = *WizData::Uint64ToLE(spendings[i].value);
+        UTXOfield.insert(UTXOfield.end(), UTXOValue.begin(), UTXOValue.end());
+        
+        UTXOfield.insert(UTXOfield.end(), scriptPubkeyLen.begin(), scriptPubkeyLen.end());
+        UTXOfield.insert(UTXOfield.end(), UTXOScriptPubkey.begin(), UTXOScriptPubkey.end());
+        
+        returnValtype.insert(returnValtype.end(), UTXOfield.begin(), UTXOfield.end());
+    }
+    
+    return returnValtype;
 }

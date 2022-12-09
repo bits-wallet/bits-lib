@@ -25,8 +25,11 @@ public:
 };
 
 class Prover {
+private:
+    std::vector<UTXO> spendings;
 public:
     Prover(valtype vRawBlock);
+    valtype exportSpendingsRaw();
 };
 
 #endif /* prover_h */

@@ -170,12 +170,12 @@ int main() {
     
     std::cout << "returnLeafHash: " << (int)ProverSync::utxoSet[0].returnLeafHash()[23] << std::endl;
     
-    valtype bobobo = Proof::exportUTXOsRaw(ProverSync::utxoSet);
+    valtype bobobo = block3->exportSpendingsRaw();
     std::cout << "hohoho: " <<  bobobo.size()  << std::endl;
     
     Proof xd;
     std::cout << "hohoho2: " << xd.importUTXOs(bobobo) << std::endl;
-    std::cout << "hohoho3: " << (int)xd.returnUTXOHashes()[0][1] << std::endl;
+
     
     
     std::string s;
