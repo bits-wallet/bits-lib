@@ -13,8 +13,6 @@
 #include "../crypto/sha256.h"
 #include <array>
 
-
-
 class UTXO {
 public:
     uint32_t height;
