@@ -43,7 +43,6 @@ Prover::Prover(valtype vRawBlock) {
         ProverSync::proverHeight++;
 }
 
-
 std::pair<uint32_t, UTXO*> ProverSync::returnUTXOFromOutpoint(valtype prevHash, uint32_t vout) {
     std::pair<uint32_t, UTXO*> returnPair;
     for(uint32_t i = 0; i < ProverSync::utxoSet.size(); i++) {

@@ -13,11 +13,12 @@
 
 class Proof {
 public:
+    static valtype exportUTXOsRaw (std::vector<UTXO> utxos);
+public:
     std::vector<UTXO> utxos;
     std::vector<uint8_t> serializedProof;
     Proof() {};
     bool importUTXOs (valtype rawImport);
-    //valtype exportUtxosRaw ();
 };
 
 #endif /* proof_h */

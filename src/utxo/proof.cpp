@@ -20,9 +20,10 @@ bool Proof::importUTXOs (valtype rawImport) {
     else {
         totalLen = *WizData::LEtoUint32(vTotalLenFirstByte);
     }
-    
+
     for (int i = 0; i < totalLen; i++) {
         uint32_t height = *WizData::LEtoUint32(WizData::splitValtypeSet(pRawImport, elapsedBytes, 4)); elapsedBytes += 4;
+        
         valtype prevHash = WizData::splitValtypeSet(pRawImport, elapsedBytes, 32); elapsedBytes += 32;
         uint32_t vout = *WizData::LEtoUint32(WizData::splitValtypeSet(pRawImport, elapsedBytes, 4)); elapsedBytes += 4;
         uint64_t value = *WizData::LEtoUint64(WizData::splitValtypeSet(pRawImport, elapsedBytes, 8)); elapsedBytes += 8;
@@ -50,4 +51,35 @@ bool Proof::importUTXOs (valtype rawImport) {
         this->utxos.push_back(UTXO(height, prevHash, vout, value, scriptPubkey));
     }
     return (elapsedBytes == rawImport.size());
+}
+
+valtype Proof::exportUTXOsRaw (std::vector<UTXO> utxos) {
+    valtype returnValtype;
+    valtype numUTXOs = WizData::prefixCompactSizeCast((uint32_t)utxos.size());
+    returnValtype.insert(returnValtype.begin(), numUTXOs.begin(), numUTXOs.end());
+    
+    for(int i = 0; i < utxos.size(); i++) {
+        valtype UTXOfield;
+        valtype UTXOScriptPubkey = utxos[i].scriptPubkey;
+        valtype scriptPubkeyLen = WizData::prefixCompactSizeCast((uint32_t)(UTXOScriptPubkey.size()));
+        
+        valtype UTXOHeight = *WizData::Uint32ToLE(utxos[i].height);
+        UTXOfield.insert(UTXOfield.end(), UTXOHeight.begin(), UTXOHeight.end());
+        
+        valtype UTXOPrevHash = utxos[i].prevHash;
+        UTXOfield.insert(UTXOfield.end(), UTXOPrevHash.begin(), UTXOPrevHash.end());
+        
+        valtype UTXOVout = *WizData::Uint32ToLE(utxos[i].vout);
+        UTXOfield.insert(UTXOfield.end(), UTXOVout.begin(), UTXOVout.end());
+        
+        valtype UTXOValue = *WizData::Uint64ToLE(utxos[i].value);
+        UTXOfield.insert(UTXOfield.end(), UTXOValue.begin(), UTXOValue.end());
+        
+        UTXOfield.insert(UTXOfield.end(), scriptPubkeyLen.begin(), scriptPubkeyLen.end());
+        UTXOfield.insert(UTXOfield.end(), UTXOScriptPubkey.begin(), UTXOScriptPubkey.end());
+        
+        returnValtype.insert(returnValtype.end(), UTXOfield.begin(), UTXOfield.end());
+    }
+    
+    return returnValtype;
 }

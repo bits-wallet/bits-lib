@@ -11,6 +11,7 @@
 #include "block/block.h"
 #include "prover/prover.h"
 
+#include "utxo/proof.h"
 
 
 
@@ -169,8 +170,13 @@ int main() {
     
     std::cout << "returnLeafHash: " << (int)ProverSync::utxoSet[0].returnLeafHash()[23] << std::endl;
     
-    std::cout << "sdf: " << (int)ProverSync::utxoLeafSet[0].first[23] << std::endl;
-    std::cout << "sdf: " << (int)ProverSync::utxoLeafSet[0].second << std::endl;
+    valtype bobobo = Proof::exportUTXOsRaw(ProverSync::utxoSet);
+    std::cout << "hohoho: " <<  bobobo.size()  << std::endl;
+    
+    Proof xd;
+    std::cout << "hohoho2: " << xd.importUTXOs(bobobo) << std::endl;
+    
+    
     
     std::string s;
     std::cin >> s;

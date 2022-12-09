@@ -66,6 +66,17 @@ uint256 *WizData::LEtoUint256(valtype in){
     uint256 *val = new uint256(in);
     return val;
 }
+valtype *WizData::Uint16ToLE(uint16_t in) {
+    unsigned char *ptr = new unsigned char;
+    WriteLE16(ptr,in);
+
+    valtype *returnVal = new valtype;
+    returnVal->push_back(ptr[0]);
+    returnVal->push_back(ptr[1]);
+    
+    delete ptr;
+    return returnVal;
+}
 
 valtype *WizData::Uint32ToLE(uint32_t in) {
     unsigned char *ptr = new unsigned char;
@@ -121,4 +132,27 @@ valtype WizData::hexStringToValtype(std::string in){
     }
     
     return  returnVal;
+}
+
+valtype WizData::prefixCompactSizeCast(uint32_t size) {
+    valtype returnValtype;
+    if (size < 253) {
+        returnValtype.push_back((unsigned char)size);
+    }
+    else if (size <= 65535){
+        returnValtype.push_back(0xFD);
+        valtype val = *WizData::Uint16ToLE((uint16_t)size);
+        returnValtype.insert(returnValtype.end(), val.begin(), val.end());
+    }
+    else if (size <= 4294967295){
+        returnValtype.push_back(0xFE);
+        valtype val = *WizData::Uint32ToLE(size);
+        returnValtype.insert(returnValtype.end(), val.begin(), val.end());
+    }
+    else {
+        returnValtype.push_back(0xFF);
+        valtype val = *WizData::Uint64ToLE(size);
+        returnValtype.insert(returnValtype.end(), val.begin(), val.end());
+    }
+    return returnValtype;
 }

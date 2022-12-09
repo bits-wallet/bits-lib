@@ -16,10 +16,10 @@
 
 class Block {
 public:
+    static Block submitNewBlock(valtype vRawBlock);
     std::vector<Transaction> transactions;
     Block() {};
     void setBlock(std::vector<Transaction> transactions) { this->transactions = transactions; };
-    static Block submitNewBlock(valtype vRawBlock);
 };
 
 #endif /* block_h */
