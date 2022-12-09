@@ -16,7 +16,7 @@ public:
     std::vector<UTXO> utxos;
     std::vector<uint8_t> serializedProof;
     Proof() {};
-    void importUtxos (valtype rawImport);
+    bool importUTXOs (valtype rawImport);
     //valtype exportUtxosRaw ();
 };
 

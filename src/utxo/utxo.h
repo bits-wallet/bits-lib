@@ -20,7 +20,7 @@ public:
     uint32_t vout;
     uint64_t value;
     valtype scriptPubkey;
-    UTXO(valtype prevHash, uint32_t vout, uint32_t height, uint64_t value, valtype scriptPubkey): prevHash(prevHash), vout(vout), height(height), value(value), scriptPubkey(scriptPubkey) {}
+    UTXO(uint32_t height, valtype prevHash, uint32_t vout, uint64_t value, valtype scriptPubkey): height(height), prevHash(prevHash), vout(vout), value(value), scriptPubkey(scriptPubkey) {}
     Hash returnLeafHash();
 };
 

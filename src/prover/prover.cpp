@@ -33,7 +33,7 @@ Prover::Prover(valtype vRawBlock) {
     
         // Add tx_i outputs to the utxo set
         for (uint32_t k = 0; k < transactions[i].outputs.size(); k++) {
-            UTXO newUtxo(transactions[i].txid, k, (ProverSync::proverHeight + 1), (transactions[i].outputs[k].amount), transactions[i].outputs[k].scriptPubkey);
+            UTXO newUtxo(ProverSync::proverHeight + 1, transactions[i].txid, k, (transactions[i].outputs[k].amount), transactions[i].outputs[k].scriptPubkey);
             ProverSync::utxoSet.push_back(newUtxo);
             ProverSync::utxoLeafSet.emplace_back(newUtxo.returnLeafHash(), false);
 
