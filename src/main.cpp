@@ -175,7 +175,7 @@ int main() {
     
     Proof xd;
     std::cout << "hohoho2: " << xd.importUTXOs(bobobo) << std::endl;
-    
+    std::cout << "hohoho3: " << (int)xd.returnUTXOHashes()[0][1] << std::endl;
     
     
     std::string s;

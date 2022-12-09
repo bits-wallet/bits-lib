@@ -19,6 +19,7 @@ public:
     std::vector<uint8_t> serializedProof;
     Proof() {};
     bool importUTXOs (valtype rawImport);
+    std::vector<Hash> returnUTXOHashes();
 };
 
 #endif /* proof_h */

@@ -83,3 +83,11 @@ valtype Proof::exportUTXOsRaw (std::vector<UTXO> utxos) {
     
     return returnValtype;
 }
+
+std::vector<Hash> Proof::returnUTXOHashes() {
+    std::vector<Hash> ret;
+    for(int i = 0; i < this->utxos.size(); i++) {
+        ret.push_back(this->utxos[i].returnLeafHash());
+    }
+    return ret;
+}
