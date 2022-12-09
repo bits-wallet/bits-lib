@@ -18,7 +18,9 @@
 class ProverSync {
 public:
     static std::vector<UTXO> utxoSet;
-    static std::pair<uint64_t, UTXO*> returnUTXOFromOutpoint(valtype prevHash, uint32_t vout);
+    static std::vector<Leaf> utxoLeafSet;
+    
+    static std::pair<uint32_t, UTXO*> returnUTXOFromOutpoint(valtype prevHash, uint32_t vout);
     static uint32_t proverHeight;
     ProverSync() {};
 };

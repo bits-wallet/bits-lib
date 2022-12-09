@@ -152,7 +152,7 @@ int main() {
     
     valtype rawblock3 = stringToValtype("01000000BDDD99CCFDA39DA1B108CE1A5D70038D0A967BACB68B6B63065F626A0000000044F672226090D85DB9A9F2FBFE5F0F9609B387AF7BE5B7FBB7A1767C831C9E995DBE6649FFFF001D05E0ED6D0101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D010EFFFFFFFF0100F2052A0100000043410494B9D3E76C5B1629ECF97FFF95D7A4BBDAC87CC26099ADA28066C6FF1EB9191223CD897194A08D0C2726C5747F1DB49E8CF90E75DC3E3550AE9B30086F3CD5AAAC00000000");
     
-    ProverSync *ps = new ProverSync;
+    new ProverSync();
     
     Prover *block1 = new Prover(rawblock1);
     delete block1;
@@ -167,7 +167,10 @@ int main() {
     
     std::cout << "size: " << ProverSync::utxoSet.size() << std::endl;
     
-    std::cout << "returnLeafHash: " << (int)ProverSync::utxoSet[0].returnLeafHash()[31] << std::endl;
+    std::cout << "returnLeafHash: " << (int)ProverSync::utxoSet[0].returnLeafHash()[23] << std::endl;
+    
+    std::cout << "sdf: " << (int)ProverSync::utxoLeafSet[0].first[23] << std::endl;
+    std::cout << "sdf: " << (int)ProverSync::utxoLeafSet[0].second << std::endl;
     
     std::string s;
     std::cin >> s;

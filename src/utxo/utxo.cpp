@@ -9,12 +9,16 @@
 
 Hash UTXO::returnLeafHash() {
     valtype rawLeaf; valtype *hashLeaf = new valtype(32);
-    rawLeaf.insert(rawLeaf.begin(), this->height.begin(), this->height.end());
-    rawLeaf.insert(rawLeaf.end(), this->prevHash.begin(), this->prevHash.end());
-    rawLeaf.insert(rawLeaf.end(), this->vout.begin(), this->vout.end());
-    rawLeaf.insert(rawLeaf.end(), this->value.begin(), this->value.end());
-    rawLeaf.insert(rawLeaf.end(), this->scriptPubkey.begin(), this->scriptPubkey.end());
+    valtype *vHeight = WizData::Uint32ToLE(this->height);
+    valtype *vVout = WizData::Uint32ToLE(this->vout);
+    valtype *vValue = WizData::Uint64ToLE(this->value);
     
+    rawLeaf.insert(rawLeaf.begin(), vHeight->begin(), vHeight->end());
+    rawLeaf.insert(rawLeaf.end(), this->prevHash.begin(), this->prevHash.end());
+    rawLeaf.insert(rawLeaf.end(), vVout->begin(), vVout->end());
+    rawLeaf.insert(rawLeaf.end(), vValue->begin(), vValue->end());
+    rawLeaf.insert(rawLeaf.end(), this->scriptPubkey.begin(), this->scriptPubkey.end());
+
     CSHA256().Write(rawLeaf.data(), rawLeaf.size()).Finalize(hashLeaf->data());
     
     Hash hash = {};
@@ -23,5 +27,6 @@ Hash UTXO::returnLeafHash() {
         hash[i] = (uint8_t)(*hashLeaf)[i];
     }
 
+    delete hashLeaf;
     return hash;
 }

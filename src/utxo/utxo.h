@@ -13,17 +13,16 @@
 #include "../crypto/sha256.h"
 #include <array>
 
-using Hash = std::array<uint8_t, 32>;
-using Leaf = std::pair<Hash, bool>;
+
 
 class UTXO {
 public:
-    valtype height;
+    uint32_t height;
     valtype prevHash;
-    valtype vout;
-    valtype value;
+    uint32_t vout;
+    uint64_t value;
     valtype scriptPubkey;
-    UTXO(valtype prevHash, valtype vout, valtype height, valtype value, valtype scriptPubkey): prevHash(prevHash), vout(vout), height(height), value(value), scriptPubkey(scriptPubkey) {}
+    UTXO(valtype prevHash, uint32_t vout, uint32_t height, uint64_t value, valtype scriptPubkey): prevHash(prevHash), vout(vout), height(height), value(value), scriptPubkey(scriptPubkey) {}
     Hash returnLeafHash();
 };
 
