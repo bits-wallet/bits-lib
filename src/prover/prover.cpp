@@ -29,15 +29,16 @@ Prover::Prover(valtype vRawBlock) {
         }
     }
     
-    //2. Craft hash array of spendings
+    //2. setSpendingsRaw
+    setSpendingsRaw();
+    
+    //3. Craft hash array of spendings
     for(int i = 0; i < this->spendings.size(); i++) {
         this->spendingsHashes.push_back(this->spendings[i].returnLeafHash());
     }
 
-    exportSpendingsRaw();
-    
     std::cout << "happy" << std::endl;
-    //3. UPDATE UTXO SET
+    //4. UPDATE UTXO SET
     for (int i = 0; i < transactions.size(); i++) {
  
         if(i > 0){
@@ -75,7 +76,7 @@ std::pair<uint32_t, UTXO*> ProverSync::returnUTXOFromOutpoint(valtype prevHash, 
     return returnPair;
 }
 
-void Prover::exportSpendingsRaw() {
+void Prover::setSpendingsRaw() {
     if(this->spendings.size() > 0) {
     valtype returnValtype;
     valtype numUTXOs = WizData::prefixCompactSizeCast((uint32_t)this->spendings.size());

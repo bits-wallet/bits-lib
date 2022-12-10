@@ -29,7 +29,7 @@ private:
     valtype spendingsRaw;
     std::vector<UTXO> spendings;
     std::vector<Hash> spendingsHashes;
-    void exportSpendingsRaw();
+    void setSpendingsRaw();
 public:
     Prover(valtype vRawBlock);
     valtype readSpendingsRaw();
