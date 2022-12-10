@@ -32,13 +32,18 @@ Prover::Prover(valtype vRawBlock) {
     //2. setSpendingsRaw
     setSpendingsRaw();
     
-    //3. Craft hash array of spendings
+    //3. Craft block proof
+    utreexo::UndoBatch unused_undo;
+    utreexo::RamForest full(0);
+    full.Modify(unused_undo, ProverSync::utxoLeafSet, {});
+    full.Prove(this->proof, this->spendingsHashes);
+    
+    //4. Craft hash array of spendings
     for(int i = 0; i < this->spendings.size(); i++) {
         this->spendingsHashes.push_back(this->spendings[i].returnLeafHash());
     }
 
-    std::cout << "happy" << std::endl;
-    //4. UPDATE UTXO SET
+    //5. UPDATE UTXO SET
     for (int i = 0; i < transactions.size(); i++) {
  
         if(i > 0){
@@ -110,4 +115,8 @@ void Prover::setSpendingsRaw() {
 
 valtype Prover::readSpendingsRaw() {
     return spendingsRaw;
+}
+
+utreexo::BatchProof Prover::readProof() {
+    return this->proof;
 }

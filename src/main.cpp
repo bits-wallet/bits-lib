@@ -174,12 +174,15 @@ int main() {
     bobobo = block3->readSpendingsRaw();
     std::cout << "hohoho: " <<  bobobo.size()  << std::endl;
     
-    delete block3;
+    
     
     Proof xd;
     std::cout << "hohoho2: " << xd.importUTXOs(bobobo) << std::endl;
+    block3->readProof().Print();
+    std::cout << "hohoho3: "  << std::endl;
 
-    
+
+    delete block3;
     
     std::string s;
     std::cin >> s;

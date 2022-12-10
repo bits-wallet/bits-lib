@@ -14,6 +14,7 @@
 #include "../transaction/transaction.h"
 #include "../header.h"
 #include "../utxo/utxo.h"
+#include "../utreexo.h"
 
 class ProverSync {
 public:
@@ -26,6 +27,7 @@ public:
 
 class Prover {
 private:
+    utreexo::BatchProof proof;
     valtype spendingsRaw;
     std::vector<UTXO> spendings;
     std::vector<Hash> spendingsHashes;
@@ -33,6 +35,7 @@ private:
 public:
     Prover(valtype vRawBlock);
     valtype readSpendingsRaw();
+    utreexo::BatchProof readProof();
     
 };
 
