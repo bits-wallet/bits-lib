@@ -32,17 +32,17 @@ Prover::Prover(valtype vRawBlock) {
     //2. setSpendingsRaw
     setSpendingsRaw();
     
-    //3. Craft block proof
+    //3. Craft hash array of spendings
+    for(int i = 0; i < this->spendings.size(); i++) {
+        this->spendingsHashes.push_back(this->spendings[i].returnLeafHash());
+    }
+    
+    //4. Craft block proof
     utreexo::UndoBatch unused_undo;
     utreexo::RamForest full(0);
     full.Modify(unused_undo, ProverSync::utxoLeafSet, {});
     full.Prove(this->proof, this->spendingsHashes);
     
-    //4. Craft hash array of spendings
-    for(int i = 0; i < this->spendings.size(); i++) {
-        this->spendingsHashes.push_back(this->spendings[i].returnLeafHash());
-    }
-
     //5. UPDATE UTXO SET
     for (int i = 0; i < transactions.size(); i++) {
  
