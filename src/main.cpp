@@ -162,7 +162,7 @@ int main() {
     delete block2;
     
     Prover *block3 = new Prover(rawblock3);
-    delete block3;
+    
     
     std::cout << "proverHeight: " << ProverSync::proverHeight << std::endl;
     
@@ -170,8 +170,11 @@ int main() {
     
     std::cout << "returnLeafHash: " << (int)ProverSync::utxoSet[0].returnLeafHash()[23] << std::endl;
     
-    valtype bobobo = block3->exportSpendingsRaw();
+    valtype bobobo;
+    bobobo = block3->readSpendingsRaw();
     std::cout << "hohoho: " <<  bobobo.size()  << std::endl;
+    
+    delete block3;
     
     Proof xd;
     std::cout << "hohoho2: " << xd.importUTXOs(bobobo) << std::endl;

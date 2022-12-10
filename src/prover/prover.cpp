@@ -17,28 +17,27 @@ Prover::Prover(valtype vRawBlock) {
     Block nb = Block::submitNewBlock(vRawBlock);
     std::vector<Transaction> transactions = nb.transactions;
     
-    
     //1. Collect spending utxos
     for (int i = 0; i < transactions.size(); i++) {
         if(i > 0){
         // Remove tx_i inputs from the utxo set
         for (uint32_t k = 0; k < transactions[i].inputs.size(); k++) {
-            
             std::pair<uint32_t, UTXO*> spendingUTXO;
             spendingUTXO = ProverSync::returnUTXOFromOutpoint(transactions[i].inputs[k].prevOutHash, transactions[i].inputs[k].voutIndex);
-            this->spendings.push_back(*spendingUTXO.second);
+            spendings.push_back(*(spendingUTXO.second));
         }
         }
     }
     
+    //2. Craft hash array of spendings
+    for(int i = 0; i < this->spendings.size(); i++) {
+        this->spendingsHashes.push_back(this->spendings[i].returnLeafHash());
+    }
 
+    exportSpendingsRaw();
     
-    
-    
-    
-    
-    
-    //2. UPDATE UTXO SET
+    std::cout << "happy" << std::endl;
+    //3. UPDATE UTXO SET
     for (int i = 0; i < transactions.size(); i++) {
  
         if(i > 0){
@@ -76,9 +75,10 @@ std::pair<uint32_t, UTXO*> ProverSync::returnUTXOFromOutpoint(valtype prevHash, 
     return returnPair;
 }
 
-valtype Prover::exportSpendingsRaw() {
+void Prover::exportSpendingsRaw() {
+    if(this->spendings.size() > 0) {
     valtype returnValtype;
-    valtype numUTXOs = WizData::prefixCompactSizeCast((uint32_t)spendings.size());
+    valtype numUTXOs = WizData::prefixCompactSizeCast((uint32_t)this->spendings.size());
     returnValtype.insert(returnValtype.begin(), numUTXOs.begin(), numUTXOs.end());
     
     for(int i = 0; i < spendings.size(); i++) {
@@ -103,6 +103,10 @@ valtype Prover::exportSpendingsRaw() {
         
         returnValtype.insert(returnValtype.end(), UTXOfield.begin(), UTXOfield.end());
     }
-    
-    return returnValtype;
+    this->spendingsRaw = returnValtype;
+    }
+}
+
+valtype Prover::readSpendingsRaw() {
+    return spendingsRaw;
 }

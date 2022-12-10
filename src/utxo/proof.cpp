@@ -9,6 +9,7 @@
 
 bool Proof::importUTXOs (valtype rawImport) {
     unsigned int elapsedBytes = 0;
+    if(rawImport.size() > 0) {
     valtype *pRawImport = &rawImport;
     valtype vTotalLenFirstByte = WizData::splitValtypeSet(pRawImport, elapsedBytes, 1); elapsedBytes ++;
     valtype vTotalLen; uint32_t totalLen;
@@ -49,6 +50,7 @@ bool Proof::importUTXOs (valtype rawImport) {
         
         valtype scriptPubkey = WizData::splitValtypeSet(pRawImport, elapsedBytes, scriptPubkeyLen); elapsedBytes += scriptPubkeyLen;
         this->utxos.push_back(UTXO(height, prevHash, vout, value, scriptPubkey));
+    }
     }
     return (elapsedBytes == rawImport.size());
 }

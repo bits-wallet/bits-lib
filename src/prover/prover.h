@@ -26,10 +26,14 @@ public:
 
 class Prover {
 private:
+    valtype spendingsRaw;
     std::vector<UTXO> spendings;
+    std::vector<Hash> spendingsHashes;
+    void exportSpendingsRaw();
 public:
     Prover(valtype vRawBlock);
-    valtype exportSpendingsRaw();
+    valtype readSpendingsRaw();
+    
 };
 
 #endif /* prover_h */
