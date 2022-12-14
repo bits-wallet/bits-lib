@@ -14,7 +14,6 @@
 #include "utxo/proof.h"
 
 
-
 using namespace std::chrono;
 
 valtype stringToValtype(std::string const& hex) {
@@ -122,6 +121,19 @@ void test_submit_header_3() {
 
 
 
+std::string getRawBlock(int height) {
+    
+    
+    char buf[8000000];
+    std::string query = "curl -H  \"Content-Type: application/json\" -X GET  http://mempool-env.eba-qh6r3f7d.us-east-2.elasticbeanstalk.com/block/"+ std::to_string(height) ;
+    
+    FILE * output = popen(query.c_str(), "r");
+    
+    while (fgets (buf, 8000000, output)) {}
+    
+    pclose(output);
+    return buf;
+  }
 
 int main() {
     
@@ -147,42 +159,114 @@ int main() {
     //test_submit_header_2();
     //test_submit_header_3();
     
-    valtype rawblock1 = stringToValtype("010000006FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D6190000000000982051FD1E4BA744BBBE680E1FEE14677BA1A3C3540BF7B1CDB606E857233E0E61BC6649FFFF001D01E362990101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D0104FFFFFFFF0100F2052A0100000043410496B538E853519C726A2C91E61EC11600AE1390813A627C66FB8BE7947BE63C52DA7589379515D4E0A604F8141781E62294721166BF621E73A82CBF2342C858EEAC00000000");
+    //valtype rawblock1 = stringToValtype("010000006FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D6190000000000982051FD1E4BA744BBBE680E1FEE14677BA1A3C3540BF7B1CDB606E857233E0E61BC6649FFFF001D01E362990101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D0104FFFFFFFF0100F2052A0100000043410496B538E853519C726A2C91E61EC11600AE1390813A627C66FB8BE7947BE63C52DA7589379515D4E0A604F8141781E62294721166BF621E73A82CBF2342C858EEAC00000000");
     
-    valtype rawblock2 = stringToValtype("010000004860EB18BF1B1620E37E9490FC8A427514416FD75159AB86688E9A8300000000D5FDCC541E25DE1C7A5ADDEDF24858B8BB665C9F36EF744EE42C316022C90F9BB0BC6649FFFF001D08D2BD610101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D010BFFFFFFFF0100F2052A010000004341047211A824F55B505228E4C3D5194C1FCFAA15A456ABDF37F9B9D97A4040AFC073DEE6C89064984F03385237D92167C13E236446B417AB79A0FCAE412AE3316B77AC00000000");
+    //valtype rawblock2 = stringToValtype("010000004860EB18BF1B1620E37E9490FC8A427514416FD75159AB86688E9A8300000000D5FDCC541E25DE1C7A5ADDEDF24858B8BB665C9F36EF744EE42C316022C90F9BB0BC6649FFFF001D08D2BD610101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D010BFFFFFFFF0100F2052A010000004341047211A824F55B505228E4C3D5194C1FCFAA15A456ABDF37F9B9D97A4040AFC073DEE6C89064984F03385237D92167C13E236446B417AB79A0FCAE412AE3316B77AC00000000");
     
-    valtype rawblock3 = stringToValtype("01000000BDDD99CCFDA39DA1B108CE1A5D70038D0A967BACB68B6B63065F626A0000000044F672226090D85DB9A9F2FBFE5F0F9609B387AF7BE5B7FBB7A1767C831C9E995DBE6649FFFF001D05E0ED6D0101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D010EFFFFFFFF0100F2052A0100000043410494B9D3E76C5B1629ECF97FFF95D7A4BBDAC87CC26099ADA28066C6FF1EB9191223CD897194A08D0C2726C5747F1DB49E8CF90E75DC3E3550AE9B30086F3CD5AAAC00000000");
+    //valtype rawblock3 = stringToValtype("01000000BDDD99CCFDA39DA1B108CE1A5D70038D0A967BACB68B6B63065F626A0000000044F672226090D85DB9A9F2FBFE5F0F9609B387AF7BE5B7FBB7A1767C831C9E995DBE6649FFFF001D05E0ED6D0101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D010EFFFFFFFF0100F2052A0100000043410494B9D3E76C5B1629ECF97FFF95D7A4BBDAC87CC26099ADA28066C6FF1EB9191223CD897194A08D0C2726C5747F1DB49E8CF90E75DC3E3550AE9B30086F3CD5AAAC00000000");
     
     new ProverSync();
     
-    Prover *block1 = new Prover(rawblock1);
-    delete block1;
+    // Prover *block1 = new Prover(rawblock1);
+    // delete block1;
     
-    Prover *block2 = new Prover(rawblock2);
-    delete block2;
+    // Prover *block2 = new Prover(rawblock2);
+    //delete block2;
     
-    Prover *block3 = new Prover(rawblock3);
+    //Prover *block3 = new Prover(rawblock3);
     
+    // std::cout << "proverHeight: " << ProverSync::proverHeight << std::endl;
     
-    std::cout << "proverHeight: " << ProverSync::proverHeight << std::endl;
+    //std::cout << "size: " << ProverSync::utxoSet.size() << std::endl;
     
-    std::cout << "size: " << ProverSync::utxoSet.size() << std::endl;
+    // std::cout << "returnLeafHash: " << (int)ProverSync::utxoSet[0].returnLeafHash()[23] << std::endl;
     
-    std::cout << "returnLeafHash: " << (int)ProverSync::utxoSet[0].returnLeafHash()[23] << std::endl;
+    // valtype bobobo;
+    // bobobo = block3->readSpendingsRaw();
+    // std::cout << "hohoho: " <<  bobobo.size()  << std::endl;
     
-    valtype bobobo;
-    bobobo = block3->readSpendingsRaw();
-    std::cout << "hohoho: " <<  bobobo.size()  << std::endl;
-    
-    
-    
-    Proof xd;
-    std::cout << "hohoho2: " << xd.importUTXOs(bobobo) << std::endl;
-    block3->readProof().Print();
-    std::cout << "hohoho3: "  << std::endl;
+    //Proof xd;
+    //std::cout << "hohoho2: " << xd.importUTXOs(bobobo) << std::endl;
+    //block3->readProof().Print();
+    // std::cout << "hohoho3: "  << std::endl;
 
+    //delete block3;
+    //767309
+    for (int l = 1; l < 180; l++) {
+        std::string aa = getRawBlock(l);
+        valtype blockRaw = stringToValtype(aa.substr(1,aa.size()-2));
+        Prover *proverBlock = new Prover(blockRaw);
+        
 
-    delete block3;
+        std::vector<uint8_t> proofBlock;
+        proverBlock->readProof().Serialize(proofBlock);
+        proverBlock->readProof().Print();
+  
+        std::cout << "proofBlock: " << proofBlock.size() << std::endl;
+        
+        //std::to_string(l)
+        std::string p_str = std::to_string(l) + "_p.bin";
+        
+        char pn[p_str.size()];
+        for (int m = 0; m < p_str.size(); m++) {
+            pn[m] = p_str[m];
+        }
+        FILE * pFile;
+        
+        char proofBuffer[proofBlock.size()];
+                
+        for (int z = 0; z < proofBlock.size(); z++) {
+            proofBuffer[z] = proofBlock[z];
+        }
+        
+        pFile = fopen ( pn , "w+b" );
+        fwrite (proofBuffer , 1 , sizeof(proofBuffer) , pFile );
+        fclose (pFile);
+        
+        
+        valtype spendingsBlock = proverBlock->readSpendingsRaw();
+        std::cout << "spendingsBlock: " << spendingsBlock.size() << std::endl;
+        
+        //std::to_string(l)
+        std::string s_str = std::to_string(l) + "_s.bin";
+        char fn[s_str.size()];
+        for (int m = 0; m < s_str.size(); m++) {
+            fn[m] = s_str[m];
+        }
+        FILE * sFile;
+        
+        char spendingsBuffer[spendingsBlock.size()];
+                
+        for (int z = 0; z < spendingsBlock.size(); z++) {
+            spendingsBuffer[z] = spendingsBlock[z];
+        }
+        
+        sFile = fopen ( fn , "w+b" );
+        fwrite (spendingsBuffer , 1 , sizeof(spendingsBuffer) , sFile );
+        fclose (sFile);
+        
+        
+        
+        
+        
+        
+        delete proverBlock;
+        
+        
+    
+        
+        
+        
+
+        std::cout << "__________PROVER_BLOCK_HEIGHT_" << std::to_string(l) << "_SYNCED_SIZE_" << std::to_string(blockRaw.size()) << "_________"<< std::endl;
+        
+        if(l > 11){
+            l = 169;
+        }
+        
+    }
+
+    
     
     std::string s;
     std::cin >> s;

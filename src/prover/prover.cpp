@@ -13,10 +13,8 @@ std::vector<UTXO> ProverSync::utxoSet;
 std::vector<Leaf> ProverSync::utxoLeafSet;
 
 Prover::Prover(valtype vRawBlock) {
-    
     Block nb = Block::submitNewBlock(vRawBlock);
     std::vector<Transaction> transactions = nb.transactions;
-    
     //1. Collect spending utxos
     for (int i = 0; i < transactions.size(); i++) {
         if(i > 0){
@@ -24,24 +22,28 @@ Prover::Prover(valtype vRawBlock) {
         for (uint32_t k = 0; k < transactions[i].inputs.size(); k++) {
             std::pair<uint32_t, UTXO*> spendingUTXO;
             spendingUTXO = ProverSync::returnUTXOFromOutpoint(transactions[i].inputs[k].prevOutHash, transactions[i].inputs[k].voutIndex);
-            spendings.push_back(*(spendingUTXO.second));
+            this->spendings.push_back(*(spendingUTXO.second));
         }
         }
     }
-    
     //2. setSpendingsRaw
     setSpendingsRaw();
-    
     //3. Craft hash array of spendings
     for(int i = 0; i < this->spendings.size(); i++) {
         this->spendingsHashes.push_back(this->spendings[i].returnLeafHash());
     }
-    
     //4. Craft block proof
+    std::cout << "heleheşe1" << ProverSync::utxoLeafSet.size() << std::endl;
+    std::cout << "heleheşe2" << this->spendingsHashes.size() << std::endl;
+   
     utreexo::UndoBatch unused_undo;
     utreexo::RamForest full(0);
     full.Modify(unused_undo, ProverSync::utxoLeafSet, {});
     full.Prove(this->proof, this->spendingsHashes);
+    
+    std::cout << "heleheşe3" << full.NumLeaves() << std::endl;
+    full.PrintRoots();
+    std::cout << "heleheşe4" << std::endl;
     
     //5. UPDATE UTXO SET
     for (int i = 0; i < transactions.size(); i++) {
@@ -54,28 +56,29 @@ Prover::Prover(valtype vRawBlock) {
             ProverSync::utxoSet.erase(ProverSync::utxoSet.begin() + removeUTXO.first);
             //
             ProverSync::utxoLeafSet.erase(ProverSync::utxoLeafSet.begin() + removeUTXO.first);
-            delete removeUTXO.second;
+            //delete removeUTXO.second;
         }
         }
-    
         // Add tx_i outputs to the utxo set
         for (uint32_t k = 0; k < transactions[i].outputs.size(); k++) {
             UTXO newUtxo(ProverSync::proverHeight + 1, transactions[i].txid, k, (transactions[i].outputs[k].amount), transactions[i].outputs[k].scriptPubkey);
             ProverSync::utxoSet.push_back(newUtxo);
             ProverSync::utxoLeafSet.emplace_back(newUtxo.returnLeafHash(), false);
-
+            std::cout << "zuapa" << (int)newUtxo.returnLeafHash()[0] << std::endl;
+            std::cout << "zuapa1" << (int)newUtxo.returnLeafHash()[1] << std::endl;
+            std::cout << "zuapa2" << (int)newUtxo.returnLeafHash()[2] << std::endl;
         }
     }
-    
         ProverSync::proverHeight++;
 }
 
 std::pair<uint32_t, UTXO*> ProverSync::returnUTXOFromOutpoint(valtype prevHash, uint32_t vout) {
     std::pair<uint32_t, UTXO*> returnPair;
     for(uint32_t i = 0; i < ProverSync::utxoSet.size(); i++) {
-        if((ProverSync::utxoSet[i].scriptPubkey == prevHash) && (ProverSync::utxoSet[i].vout == vout)) {
+        if((ProverSync::utxoSet[i].prevHash == prevHash) && (ProverSync::utxoSet[i].vout == vout)) {
             returnPair.first = i;
             returnPair.second = &ProverSync::utxoSet[i];
+            return returnPair;
         }
     }
     return returnPair;
