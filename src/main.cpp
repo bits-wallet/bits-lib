@@ -163,8 +163,8 @@ int main() {
     
     //initHeaderSyncFromHeightWithComponents(2, 1, prevHash, merkeRoot, 1231469744, 486604799, 1639830024, 486604799, 1231006505, tsar);
    
-    //initHeaderSyncGenesis();
-    //test_submit_header_1();
+    initHeaderSyncGenesis();
+    test_submit_header_1();
     
     //test_submit_header_2();
     //test_submit_header_3();
