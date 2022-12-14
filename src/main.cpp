@@ -119,10 +119,20 @@ void test_submit_header_3() {
     std::cout << "submit: " << success << std::endl;
     }
 
-
+std::string getLastHeight() {
+    
+    char buf[32];
+    std::string query = "curl -H  \"Content-Type: application/json\" -X GET  http://mempool-env.eba-qh6r3f7d.us-east-2.elasticbeanstalk.com/lastblock";
+    
+    FILE * output = popen(query.c_str(), "r");
+    
+    while (fgets (buf, 32, output)) {}
+    
+    pclose(output);
+    return buf;
+  }
 
 std::string getRawBlock(int height) {
-    
     
     char buf[8000000];
     std::string query = "curl -H  \"Content-Type: application/json\" -X GET  http://mempool-env.eba-qh6r3f7d.us-east-2.elasticbeanstalk.com/block/"+ std::to_string(height) ;
@@ -165,7 +175,7 @@ int main() {
     
     //valtype rawblock3 = stringToValtype("01000000BDDD99CCFDA39DA1B108CE1A5D70038D0A967BACB68B6B63065F626A0000000044F672226090D85DB9A9F2FBFE5F0F9609B387AF7BE5B7FBB7A1767C831C9E995DBE6649FFFF001D05E0ED6D0101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D010EFFFFFFFF0100F2052A0100000043410494B9D3E76C5B1629ECF97FFF95D7A4BBDAC87CC26099ADA28066C6FF1EB9191223CD897194A08D0C2726C5747F1DB49E8CF90E75DC3E3550AE9B30086F3CD5AAAC00000000");
     
-    new ProverSync();
+    
     
     // Prover *block1 = new Prover(rawblock1);
     // delete block1;
@@ -192,7 +202,21 @@ int main() {
 
     //delete block3;
     //767309
-    for (int l = 1; l < 180; l++) {
+    
+    new ProverSync();
+    
+    for (int l = 1; l < 2147483647; l++) {
+        
+
+        
+        std::string lastHeightStr = getLastHeight();
+        int lastHeight = std::stoi(lastHeightStr.substr(1,lastHeightStr.size()-2));
+        std::cout << "lastHeight: " << lastHeight << std::endl;
+        
+        if(l >= lastHeight){
+            break;
+        }
+        
         std::string aa = getRawBlock(l);
         valtype blockRaw = stringToValtype(aa.substr(1,aa.size()-2));
         Prover *proverBlock = new Prover(blockRaw);
@@ -260,9 +284,7 @@ int main() {
 
         std::cout << "__________PROVER_BLOCK_HEIGHT_" << std::to_string(l) << "_SYNCED_SIZE_" << std::to_string(blockRaw.size()) << "_________"<< std::endl;
         
-        if(l > 11){
-            l = 169;
-        }
+       
         
     }
 

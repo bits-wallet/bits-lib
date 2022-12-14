@@ -33,17 +33,11 @@ Prover::Prover(valtype vRawBlock) {
         this->spendingsHashes.push_back(this->spendings[i].returnLeafHash());
     }
     //4. Craft block proof
-    std::cout << "heleheşe1" << ProverSync::utxoLeafSet.size() << std::endl;
-    std::cout << "heleheşe2" << this->spendingsHashes.size() << std::endl;
-   
     utreexo::UndoBatch unused_undo;
     utreexo::RamForest full(0);
+    
     full.Modify(unused_undo, ProverSync::utxoLeafSet, {});
     full.Prove(this->proof, this->spendingsHashes);
-    
-    std::cout << "heleheşe3" << full.NumLeaves() << std::endl;
-    full.PrintRoots();
-    std::cout << "heleheşe4" << std::endl;
     
     //5. UPDATE UTXO SET
     for (int i = 0; i < transactions.size(); i++) {
@@ -64,11 +58,9 @@ Prover::Prover(valtype vRawBlock) {
             UTXO newUtxo(ProverSync::proverHeight + 1, transactions[i].txid, k, (transactions[i].outputs[k].amount), transactions[i].outputs[k].scriptPubkey);
             ProverSync::utxoSet.push_back(newUtxo);
             ProverSync::utxoLeafSet.emplace_back(newUtxo.returnLeafHash(), false);
-            std::cout << "zuapa" << (int)newUtxo.returnLeafHash()[0] << std::endl;
-            std::cout << "zuapa1" << (int)newUtxo.returnLeafHash()[1] << std::endl;
-            std::cout << "zuapa2" << (int)newUtxo.returnLeafHash()[2] << std::endl;
         }
     }
+        std::cout << "zxczx: " << ProverSync::utxoSet.size() << std::endl;
         ProverSync::proverHeight++;
 }
 
