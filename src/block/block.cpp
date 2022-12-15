@@ -7,8 +7,6 @@
 
 #include "block.h"
 
-
-
 Block Block::submitNewBlock(valtype vRawBlock) {
     valtype *pVRawBlock = &vRawBlock;
     
@@ -258,7 +256,6 @@ Block Block::submitNewBlock(valtype vRawBlock) {
             if(witnessSer)
                 delete txid;
             
-           
             ///
         }
 

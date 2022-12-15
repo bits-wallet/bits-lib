@@ -12,7 +12,6 @@
 #include "../util/wizdata.h"
 #include "../crypto/sha256.h"
 
-
 class TxIn {
 public:
     valtype prevOutHash;
