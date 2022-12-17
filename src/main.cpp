@@ -10,6 +10,7 @@
 #include "transaction/transaction.h"
 #include "block/block.h"
 #include "utxo/proof.h"
+#include "verifier/verifier.h"
 
 using namespace std::chrono;
 
@@ -123,6 +124,12 @@ int main() {
     test_submit_header_1();
     test_submit_header_2();
     test_submit_header_3();
+    
+    VerifierSync vs(0);
+    
+    
+    
+    
     
     std::string s;
     std::cin >> s;

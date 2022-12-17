@@ -7,6 +7,8 @@
 
 #include "proof.h"
 
+
+
 bool Proof::importUTXOs (valtype rawImport) {
     unsigned int elapsedBytes = 0;
     if(rawImport.size() > 0) {
@@ -61,6 +63,14 @@ std::vector<Hash> Proof::returnUTXOHashes() {
     std::vector<Hash> ret;
     for(int i = 0; i < this->utxos.size(); i++) {
         ret.push_back(this->utxos[i].returnLeafHash());
+    }
+    return ret;
+}
+
+std::vector<Leaf> Proof::returnUTXOLeaves() {
+    std::vector<Leaf> ret;
+    for(int i = 0; i < this->utxos.size(); i++) {
+        ret.emplace_back(this->utxos[i].returnLeafHash(), false);
     }
     return ret;
 }

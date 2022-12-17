@@ -18,6 +18,7 @@ public:
     Proof() {};
     bool importUTXOs (valtype rawImport);
     std::vector<Hash> returnUTXOHashes();
+    std::vector<Leaf> returnUTXOLeaves();
 };
 
 #endif /* proof_h */
