@@ -50,18 +50,57 @@ uint32_t submitHeaderFromComponents(uint32_t version, unsigned char prevHash[32]
 }
 
 bool initHeaderSyncGenesis() {
-    HeaderSync();
+    new HeaderSync();
     return (HeaderSync::ancestorPast11Timestamps.size() == 11);
 }
 
 bool initHeaderSyncFromHeightWithComponents(uint32_t startHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBits, uint32_t periodTimestamp, int atsAr[11]) {
-    HeaderSync(startHeight, version, prevHash, merkeRoot, timestamp, bits, nonce, periodBits, periodTimestamp, atsAr);
+    new HeaderSync(startHeight, version, prevHash, merkeRoot, timestamp, bits, nonce, periodBits, periodTimestamp, atsAr);
     return (HeaderSync::ancestorPast11Timestamps.size() == 11);
 }
 
 bool initHeaderSyncFromHeightRaw(uint32_t startHeight, valtype rawHeader, uint32_t periodBits, uint32_t periodTimestamp, int atsAr[11]) {
-    HeaderSync(startHeight, rawHeader, periodBits, periodTimestamp, atsAr);
+    new HeaderSync(startHeight, rawHeader, periodBits, periodTimestamp, atsAr);
     return (HeaderSync::ancestorPast11Timestamps.size() == 11);
+}
+
+bool initVerifierSync(uint32_t startHeight) {
+    new VerifierSync(startHeight);
+    return true;
+}
+
+bool initVerifierSyncFromHeight(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots) {
+    new VerifierSync(startHeight, numLeaves, numRoots, roots);
+    return true;
+}
+
+std::array<unsigned char, 1024> getForestRoots() {
+    return VerifierSync::getRoots();
+}
+
+uint64_t getForestNumRoots() {
+    return VerifierSync::getNumRoots();
+}
+
+uint64_t getForestNumLeaves() {
+    return VerifierSync::getNumLeaves();
+}
+
+uint32_t getCurrentFullSyncHeight() {
+    return VerifierSync::getSyncHeight();
+}
+
+uint32_t submitRawBlock(unsigned char rawBlock[], uint32_t rbSize, unsigned char spendings[], uint32_t sSize, unsigned char proof[], uint32_t pSize){
+    valtype vRawBlock; valtype vSpendings; std::vector<uint8_t> proofBytes;;
+    
+    for(int i = 0; i < rbSize; i++) { vRawBlock.push_back(rawBlock[i]); }
+    for(int i = 0; i < sSize; i++) { vSpendings.push_back(spendings[i]); }
+    for(int i = 0; i < pSize; i++) { proofBytes.push_back((uint8_t)proof[i]); }
+    
+    Verifier *blockVerifier = new Verifier;
+    if (!blockVerifier->verify(vRawBlock, vSpendings, proofBytes)) delete blockVerifier;
+    
+    return VerifierSync::syncHeight;
 }
 
 void test_submit_header_1() {
@@ -116,8 +155,6 @@ void test_submit_header_3() {
     std::cout << "submit: " << success << std::endl;
     }
 
-
-
 int main() {
     
     initHeaderSyncGenesis();
@@ -125,11 +162,7 @@ int main() {
     test_submit_header_2();
     test_submit_header_3();
     
-    VerifierSync vs(0);
-    
-    
-    
-    
+    initVerifierSync(0);
     
     std::string s;
     std::cin >> s;

@@ -17,11 +17,19 @@
 #include "../block/block.h"
 #include "../utxo/proof.h"
 
+
 class VerifierSync {
 public:
-    static utreexo::Pollard forestState;
     static uint32_t syncHeight;
-    VerifierSync(uint32_t startHeight) { syncHeight = startHeight; }
+    static utreexo::Pollard forestState;
+    static std::array<unsigned char, 1024> getRoots();
+    static uint64_t getNumRoots();
+    static uint64_t getNumLeaves();
+    static uint32_t getSyncHeight();
+public:
+    VerifierSync(uint32_t startHeight);
+    VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots);
+    ~VerifierSync() { std::cout << "vs des" << std::endl; }
 };
 
 class Verifier {
