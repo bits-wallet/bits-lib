@@ -21,11 +21,10 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     
     //1. Craft block template
     Block vb = Block::submitNewBlock(rawBlock);
-    std::vector<Transaction> txns = vb.transactions;
     
     //2. Merkle root match
     std::vector<Bytes> txIDs;
-    for(int i = 0; i < txns.size(); i++){ txIDs.push_back(txns[i].txid); }
+    for(int i = 0; i < vb.transactions.size(); i++){ txIDs.push_back(vb.transactions[i].txid); }
     if(returnMerkleRoot(txIDs) != Header::getHeaderMerkeRoot(VerifierSync::syncHeight + 1))
         ret = false;
     
@@ -52,7 +51,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
         //6. Input validations
         for(int l = 0; l < vb.transactions[i].inputs.size(); l++) {
             
-            if(l > 0){
+            if(i > 0){
                
             //a. Outpoint matching
             if(!((vb.transactions[i].inputs[l].prevOutHash == prevouts.utxos[elapsedPrevouts].prevHash) &&
@@ -68,6 +67,9 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             }
             else {
                 //Coinbase input validation
+                if (vb.transactions[i].inputs.size() != 1)
+                    ret= false;
+                
                 inputSats += 5000000000;
             }
             elapsedPrevouts++;
@@ -92,7 +94,11 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     
     //10. Increment sync height
     VerifierSync::syncHeight++;
+    
+    std::cout << "inputSats: " << inputSats << std::endl;
+    std::cout << "outputSats: " << outputSats << std::endl;
 
+    
     return ret;
 }
 
