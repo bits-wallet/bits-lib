@@ -14,6 +14,9 @@
 
 typedef std::vector<unsigned char> valtype;
 
+
+Bytes returnMerkleRoot(std::vector<Bytes> txids);
+
 class Parser {
 };
 

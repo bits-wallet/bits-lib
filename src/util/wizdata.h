@@ -19,6 +19,7 @@
 typedef std::vector<unsigned char> valtype;
 using Hash = std::array<uint8_t, 32>;
 using Leaf = std::pair<Hash, bool>;
+using Bytes = std::vector<uint8_t>;
 
 class WizData {
 public:

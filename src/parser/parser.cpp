@@ -6,6 +6,37 @@
 //
 
 #include "parser.h"
+#include "../crypto/sha256.h"
+
+Bytes returnMerkleRoot(std::vector<Bytes> txids)
+{
+  if (txids.empty()) {
+    throw;
+  }
+
+    while (txids.size() > 1) {
+        if (txids.size() & 1) {
+      txids.push_back(txids.back());
+    }
+        
+    std::vector<Bytes> tmp;
+    for (auto it = std::begin(txids); it != std::end(txids) && std::next(it) != txids.end(); it += 2) {
+      Bytes concat = *it;
+      Bytes result(32);
+      
+      concat.insert(concat.end(), (*(it + 1)).begin(), (*(it + 1)).end());
+      
+        CSHA256().Write(result.data(), result.size()).Finalize(result.data());
+        CSHA256().Write(result.data(), result.size()).Finalize(result.data());
+      
+      tmp.push_back(result);
+      concat.clear();
+    }
+    txids = tmp;
+  }
+    return txids[0];
+}
+
 
 HeaderParser::HeaderParser(valtype rawHeader){
     assert(rawHeader.size() == 80);

@@ -6,6 +6,7 @@
 //
 
 #include "verifier.h"
+#include "../parser/parser.h"
 
 uint32_t VerifierSync::syncHeight;
 utreexo::Pollard VerifierSync::forestState(0);
@@ -22,16 +23,22 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     Block vb = Block::submitNewBlock(rawBlock);
     std::vector<Transaction> txns = vb.transactions;
     
-    //2. Import UTXOs
+    //2. Merkle root match
+    std::vector<Bytes> txIDs;
+    for(int i = 0; i < txns.size(); i++){ txIDs.push_back(txns[i].txid); }
+    if(returnMerkleRoot(txIDs) != Header::getHeaderMerkeRoot(VerifierSync::syncHeight + 1))
+        ret = false;
+    
+    //3. Import UTXOs
     Proof prevouts;
     if(!prevouts.importUTXOs(rawSpendings))
         ret = false;
     
-    //3. Craft batchproof
+    //4. Craft batchproof
     utreexo::BatchProof batchProof;
     batchProof.Serialize(proofBytes);
     
-    //4. Verify spendings against forest state
+    //5. Verify spendings against forest state
     if(!VerifierSync::forestState.Verify(batchProof, prevouts.returnUTXOHashes()))
         ret= false;
     
@@ -42,7 +49,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     
     for (int i = 0; i < vb.transactions.size(); i++) {
         
-        //5. Input validations
+        //6. Input validations
         for(int l = 0; l < vb.transactions[i].inputs.size(); l++) {
             
             if(l > 0){
@@ -66,7 +73,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             elapsedPrevouts++;
         }
         
-        //6. Output validations
+        //7. Output validations
         for(uint32_t k = 0; k < vb.transactions[i].outputs.size(); k++) {
             UTXO newUtxo(VerifierSync::syncHeight + 1, vb.transactions[i].txid, k, (vb.transactions[i].outputs[k].amount), vb.transactions[i].outputs[k].scriptPubkey);
             newLeaves.emplace_back(newUtxo.returnLeafHash(), false);
@@ -75,17 +82,17 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
         }
     }
     
-    //7. Update forest state
+    //8. Update forest state
     VerifierSync::forestState.Modify(newLeaves, batchProof.GetTargets());
     
-    //8. Inflation check
+    //9. Inflation check
     if(inputSats != outputSats) {
         ret = false;
     }
     
-    //9. Increment sync height
+    //10. Increment sync height
     VerifierSync::syncHeight++;
-    
+
     return ret;
 }
 

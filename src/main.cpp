@@ -15,7 +15,6 @@
 using namespace std::chrono;
 
 valtype stringToValtype(std::string const& hex) {
-    
     std::string newStr = "";
     
     for (int i = 0; i < (hex.size()/2); i++) {
@@ -23,11 +22,9 @@ valtype stringToValtype(std::string const& hex) {
     }
     
     std::string cipher = newStr;
-    
-    
     std::istringstream strm{cipher};
     strm >> std::hex;
-
+    
     return {std::istream_iterator<int>{strm}, {}};
 }
 
@@ -115,6 +112,22 @@ void test_submit_header_1() {
     
 }
 
+void test_submit_block_1() {
+    
+    valtype rawBlock = stringToValtype("010000006FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D6190000000000982051FD1E4BA744BBBE680E1FEE14677BA1A3C3540BF7B1CDB606E857233E0E61BC6649FFFF001D01E362990101000000010000000000000000000000000000000000000000000000000000000000000000FFFFFFFF0704FFFF001D0104FFFFFFFF0100F2052A0100000043410496B538E853519C726A2C91E61EC11600AE1390813A627C66FB8BE7947BE63C52DA7589379515D4E0A604F8141781E62294721166BF621E73A82CBF2342C858EEAC00000000");
+
+    valtype vSpendings= stringToValtype("");
+    
+    std::cout << "vSpendingss: " << vSpendings.size() << std::endl;
+    valtype vProof= stringToValtype("0000000000000000");
+    std::vector<uint8_t> proofBytes;;
+    
+    for(int i = 0; i < vProof.size(); i++) { proofBytes.push_back((uint8_t)vProof[i]); }
+    
+    Verifier *blockVerifier = new Verifier;
+    std::cout << "hello: " << blockVerifier->verify(rawBlock, vSpendings, proofBytes) << std::endl;
+}
+
 void test_submit_header_2() {
     valtype x1 = WizData::hexStringToValtype("4860eb18bf1b1620e37e9490fc8a427514");
     valtype x2 = WizData::hexStringToValtype("416fd75159ab86688e9a8300000000");
@@ -163,7 +176,8 @@ int main() {
     test_submit_header_3();
     
     initVerifierSync(0);
-    
+    test_submit_block_1();
+
     std::string s;
     std::cin >> s;
     
