@@ -12,6 +12,8 @@
 #include "utxo/proof.h"
 #include "verifier/verifier.h"
 
+#include "parser/parser.h"
+
 using namespace std::chrono;
 
 valtype stringToValtype(std::string const& hex) {
@@ -169,7 +171,7 @@ void test_submit_header_3() {
     }
 
 int main() {
-    
+
     initHeaderSyncGenesis();
     test_submit_header_1();
     test_submit_header_2();

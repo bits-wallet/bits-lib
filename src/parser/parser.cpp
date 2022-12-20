@@ -26,7 +26,7 @@ Bytes returnMerkleRoot(std::vector<Bytes> txids)
       
       concat.insert(concat.end(), (*(it + 1)).begin(), (*(it + 1)).end());
       
-        CSHA256().Write(result.data(), result.size()).Finalize(result.data());
+        CSHA256().Write(concat.data(), concat.size()).Finalize(result.data());
         CSHA256().Write(result.data(), result.size()).Finalize(result.data());
       
       tmp.push_back(result);
