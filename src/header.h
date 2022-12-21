@@ -54,7 +54,6 @@ public:
     static uint32_t syncHeight;
     static uint32_t getSyncHeight() { return syncHeight; };
     HeaderSync();
-    ~HeaderSync() { std::cout << "hs des" << std::endl; }
     HeaderSync(uint32_t startingHeight, uint32_t version, valtype prevHash, valtype merkeRoot, uint32_t timestamp, uint32_t bits, uint32_t nonce, uint32_t periodBeginningBits, uint32_t periodBeginningTimestamp, int atsAr[11]);
     HeaderSync(uint32_t startingHeight, valtype rawHeader, uint32_t periodBeginningBits, uint32_t periodBeginningTimestamp, int atsAr[11]);
 };

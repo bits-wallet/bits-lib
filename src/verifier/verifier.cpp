@@ -74,30 +74,41 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             }
             elapsedPrevouts++;
         }
-        
+
         //7. Output validations
         for(uint32_t k = 0; k < vb.transactions[i].outputs.size(); k++) {
+            
             UTXO newUtxo(VerifierSync::syncHeight + 1, vb.transactions[i].txid, k, (vb.transactions[i].outputs[k].amount), vb.transactions[i].outputs[k].scriptPubkey);
             newLeaves.emplace_back(newUtxo.returnLeafHash(), false);
             
             outputSats += vb.transactions[i].outputs[k].amount;
         }
     }
+
+    if(!ret)
+        return ret;
     
-    //8. Update forest state
+    //AFTER VALIDATIONS
+    
+    //8. Free previos header from memory
+    if ((((Header*)Header::headerAddresses[0])->height) < (VerifierSync::syncHeight + 1)) {
+        delete (Header*)Header::headerAddresses[0];
+        Header::headerAddresses.erase(Header::headerAddresses.begin());
+    }
+
+    //9. Update forest state
     VerifierSync::forestState.Modify(newLeaves, batchProof.GetTargets());
     
-    //9. Inflation check
+    //10. Inflation check
     if(inputSats != outputSats) {
         ret = false;
     }
     
-    //10. Increment sync height
+    //11. Increment sync height
     VerifierSync::syncHeight++;
     
     std::cout << "inputSats: " << inputSats << std::endl;
     std::cout << "outputSats: " << outputSats << std::endl;
-
     
     return ret;
 }

@@ -63,8 +63,8 @@ bool initHeaderSyncFromHeightRaw(uint32_t startHeight, valtype rawHeader, uint32
     return (HeaderSync::ancestorPast11Timestamps.size() == 11);
 }
 
-bool initVerifierSync(uint32_t startHeight) {
-    new VerifierSync(startHeight);
+bool initVerifierSync() {
+    new VerifierSync(0);
     return true;
 }
 
@@ -177,7 +177,7 @@ int main() {
     test_submit_header_2();
     test_submit_header_3();
     
-    initVerifierSync(0);
+    initVerifierSync();
     test_submit_block_1();
 
     std::string s;
