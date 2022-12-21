@@ -11,6 +11,21 @@
 uint32_t VerifierSync::syncHeight;
 utreexo::Pollard VerifierSync::forestState(0);
 
+
+//https://github.com/bitcoin/bitcoin/blob/f3bc1a72825fe2b51f4bc20e004cef464f05b965/src/validation.cpp#L1462
+CAmount GetBlockSubsidy(int nHeight)
+{
+    int halvings = nHeight / 210000;
+    // Force block reward to zero when right shift is undefined.
+    if (halvings >= 64)
+        return 0;
+
+    CAmount nSubsidy = CAmount(5000000000);
+    // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
+    nSubsidy >>= halvings;
+    return nSubsidy;
+}
+
 bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_t> proofBytes) {
     
     bool ret = true;
@@ -70,7 +85,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
                 if (vb.transactions[i].inputs.size() != 1)
                     ret= false;
                 
-                inputSats += 5000000000;
+                inputSats += GetBlockSubsidy(VerifierSync::syncHeight + 1);
             }
             elapsedPrevouts++;
         }
@@ -78,9 +93,11 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
         //7. Output validations
         for(uint32_t k = 0; k < vb.transactions[i].outputs.size(); k++) {
             
+            //Add new utxos to leaf set
             UTXO newUtxo(VerifierSync::syncHeight + 1, vb.transactions[i].txid, k, (vb.transactions[i].outputs[k].amount), vb.transactions[i].outputs[k].scriptPubkey);
             newLeaves.emplace_back(newUtxo.returnLeafHash(), false);
             
+            //Increment output sats
             outputSats += vb.transactions[i].outputs[k].amount;
         }
     }

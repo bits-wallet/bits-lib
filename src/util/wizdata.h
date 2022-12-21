@@ -17,6 +17,8 @@
 #include "../uint256.h"
 
 typedef std::vector<unsigned char> valtype;
+typedef int64_t CAmount;
+
 using Hash = std::array<uint8_t, 32>;
 using Leaf = std::pair<Hash, bool>;
 using Bytes = std::vector<uint8_t>;
