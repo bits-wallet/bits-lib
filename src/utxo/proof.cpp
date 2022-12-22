@@ -7,8 +7,6 @@
 
 #include "proof.h"
 
-
-
 bool Proof::importUTXOs (valtype rawImport) {
     unsigned int elapsedBytes = 0;
     if(rawImport.size() > 0) {
@@ -57,7 +55,39 @@ bool Proof::importUTXOs (valtype rawImport) {
     return (elapsedBytes == rawImport.size());
 }
 
-
+valtype Proof::exportUTXOs(std::vector<UTXO> importUTXOs){
+    valtype returnValtype;
+    
+    if(importUTXOs.size() > 0) {
+        
+    valtype numUTXOs = WizData::prefixCompactSizeCast((uint32_t)importUTXOs.size());
+    returnValtype.insert(returnValtype.begin(), numUTXOs.begin(), numUTXOs.end());
+        
+    for(int i = 0; i < importUTXOs.size(); i++) {
+        valtype UTXOfield;
+        valtype UTXOScriptPubkey = importUTXOs[i].scriptPubkey;
+        valtype scriptPubkeyLen = WizData::prefixCompactSizeCast((uint32_t)(UTXOScriptPubkey.size()));
+        
+        valtype UTXOHeight = *WizData::Uint32ToLE(importUTXOs[i].height);
+        UTXOfield.insert(UTXOfield.end(), UTXOHeight.begin(), UTXOHeight.end());
+        
+        valtype UTXOPrevHash = importUTXOs[i].prevHash;
+        UTXOfield.insert(UTXOfield.end(), UTXOPrevHash.begin(), UTXOPrevHash.end());
+        
+        valtype UTXOVout = *WizData::Uint32ToLE(importUTXOs[i].vout);
+        UTXOfield.insert(UTXOfield.end(), UTXOVout.begin(), UTXOVout.end());
+        
+        valtype UTXOValue = *WizData::Uint64ToLE(importUTXOs[i].value);
+        UTXOfield.insert(UTXOfield.end(), UTXOValue.begin(), UTXOValue.end());
+        
+        UTXOfield.insert(UTXOfield.end(), scriptPubkeyLen.begin(), scriptPubkeyLen.end());
+        UTXOfield.insert(UTXOfield.end(), UTXOScriptPubkey.begin(), UTXOScriptPubkey.end());
+        
+        returnValtype.insert(returnValtype.end(), UTXOfield.begin(), UTXOfield.end());
+    }
+    }
+    return returnValtype;
+}
 
 std::vector<Hash> Proof::returnUTXOHashes() {
     std::vector<Hash> ret;

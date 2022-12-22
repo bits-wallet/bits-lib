@@ -64,7 +64,7 @@ bool initHeaderSyncFromHeightRaw(uint32_t startHeight, valtype rawHeader, uint32
 }
 
 bool initVerifierSync() {
-    new VerifierSync(0);
+    new VerifierSync();
     return true;
 }
 

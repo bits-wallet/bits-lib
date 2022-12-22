@@ -10,7 +10,7 @@
 
 uint32_t VerifierSync::syncHeight;
 utreexo::Pollard VerifierSync::forestState(0);
-
+std::vector<UTXO> VerifierSync::coinbaseUTXOs;
 
 //https://github.com/bitcoin/bitcoin/blob/f3bc1a72825fe2b51f4bc20e004cef464f05b965/src/validation.cpp#L1462
 CAmount GetBlockSubsidy(int nHeight)
@@ -78,17 +78,37 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             //c. Increment input sats
             inputSats += prevouts.utxos[elapsedPrevouts].value;
 
-            //n. Increment 'elapsedPrevouts'
+            //d. Check if this is a coinbase spent
+                uint32_t cbUTXOIndex = VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[i].inputs[l].prevOutHash, vb.transactions[i].inputs[l].voutIndex);
+            
+            //e. coinbase spent maturity check
+            if(cbUTXOIndex != 0) {
+                if((VerifierSync::syncHeight + 1 - VerifierSync::coinbaseUTXOs[cbUTXOIndex].height) < 100)
+                    ret = false;
+            }
+                    
             }
             else {
-                //Coinbase input validation
-                if (vb.transactions[i].inputs.size() != 1)
-                    ret= false;
+                
+                //a. BIP-30 check except the two historic blocks at heights 91842 and 91880
+                if(((VerifierSync::syncHeight + 1) != 91842) && ((VerifierSync::syncHeight + 1) != 91880)){
+                    if(VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[0].txid) != 0)
+                        ret = false;
+                }
+                
+                //Coinbase input validations
+                if ((vb.transactions[i].inputs.size() != 1) ||
+                    (vb.transactions[i].inputs[0].scriptSig.size() > 100) ||
+                    (vb.transactions[i].inputs[0].scriptSig.size() < 2))
+                    ret = false;
                 
                 inputSats += GetBlockSubsidy(VerifierSync::syncHeight + 1);
             }
             elapsedPrevouts++;
         }
+        
+        if(elapsedPrevouts != (prevouts.utxos.size() + 1))
+            ret = false;
 
         //7. Output validations
         for(uint32_t k = 0; k < vb.transactions[i].outputs.size(); k++) {
@@ -97,15 +117,17 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             UTXO newUtxo(VerifierSync::syncHeight + 1, vb.transactions[i].txid, k, (vb.transactions[i].outputs[k].amount), vb.transactions[i].outputs[k].scriptPubkey);
             newLeaves.emplace_back(newUtxo.returnLeafHash(), false);
             
+            if(i == 0)
+                VerifierSync::coinbaseUTXOs.push_back(newUtxo);
+            
             //Increment output sats
             outputSats += vb.transactions[i].outputs[k].amount;
         }
     }
     
     //8. Inflation check
-    if(inputSats != outputSats) {
+    if(inputSats != outputSats)
         ret = false;
-    }
 
     if(!ret)
         return ret;
@@ -130,8 +152,8 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     return ret;
 }
 
-VerifierSync::VerifierSync(uint32_t startHeight) {
-    this->syncHeight = startHeight;
+VerifierSync::VerifierSync() {
+    this->syncHeight = 0;
     this->forestState = utreexo::Pollard(0);
 }
 
@@ -157,7 +179,8 @@ std::array<unsigned char, 1024> VerifierSync::getRoots() {
     std::vector<Hash> roots;
     forestState.Roots(roots);
     
-    int elapsed = 0;
+    //
+    int elapsed = -1;
     for(int i = 0; i < roots.size(); i++) {
         for(int l = 0; l < 32; l++) {
             ret[++elapsed] = (unsigned char)(roots[i])[l];
@@ -179,4 +202,46 @@ uint64_t VerifierSync::getNumLeaves() {
 
 uint32_t VerifierSync::getSyncHeight() {
     return syncHeight;
+}
+
+std::array<unsigned char, 5000000> VerifierSync::getCoinbaseUTXOs() {
+    Proof p;
+    valtype ret = p.exportUTXOs(VerifierSync::coinbaseUTXOs);
+    std::array<unsigned char, 5000000> ar;
+    
+    int elapsed = -1;
+    
+    for (int i = 0; i < ret.size(); i++) {
+        ar[++elapsed] = ret[i];
+    }
+    
+    return ar;
+}
+
+uint32_t VerifierSync::getCoinbaseUTXOsSize() {
+    Proof p;
+    valtype ret = p.exportUTXOs(VerifierSync::coinbaseUTXOs);
+    return (uint32_t)ret.size();
+}
+
+uint32_t VerifierSync::returnCoinbaseUTXOIndex(valtype prevHash, uint32_t vout) {
+    uint32_t ret = 0;
+    
+    for (int i = 0; i < coinbaseUTXOs.size(); i++) {
+        if((coinbaseUTXOs[i].prevHash == prevHash) && (coinbaseUTXOs[i].vout == vout)){
+            ret = i;
+        }
+    }
+    return ret;
+}
+
+uint32_t VerifierSync::returnCoinbaseUTXOIndex(valtype prevHash) {
+    uint32_t ret = 0;
+    
+    for (int i = 0; i < coinbaseUTXOs.size(); i++) {
+        if(coinbaseUTXOs[i].prevHash == prevHash){
+            ret = i;
+        }
+    }
+    return ret;
 }

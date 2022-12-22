@@ -21,15 +21,22 @@
 class VerifierSync {
 public:
     static uint32_t syncHeight;
+    static std::vector<UTXO> coinbaseUTXOs;
     static utreexo::Pollard forestState;
     static std::array<unsigned char, 1024> getRoots();
     static uint64_t getNumRoots();
     static uint64_t getNumLeaves();
     static uint32_t getSyncHeight();
+    
+    static uint32_t returnCoinbaseUTXOIndex(valtype prevHash, uint32_t vout);
+    static uint32_t returnCoinbaseUTXOIndex(valtype prevHash);
+    
+    static uint32_t getCoinbaseUTXOsSize();
+    static std::array<unsigned char, 5000000> getCoinbaseUTXOs();
+    
 public:
-    VerifierSync(uint32_t startHeight);
+    VerifierSync();
     VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots);
-    ~VerifierSync() { std::cout << "vs des" << std::endl; }
 };
 
 class Verifier {
