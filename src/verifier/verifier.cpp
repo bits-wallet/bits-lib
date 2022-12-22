@@ -56,6 +56,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     if(!VerifierSync::forestState.Verify(batchProof, prevouts.returnUTXOHashes()))
         ret= false;
     
+    std::vector<uint32_t> cbUTXOIndexes;
     int elapsedPrevouts = 0;
     std::vector<Leaf> newLeaves;
     uint64_t inputSats = 0;
@@ -63,7 +64,13 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     
     for (int i = 0; i < vb.transactions.size(); i++) {
         
-        //6. Input validations
+        //6. BIP-30 check except the two historic blocks at heights #91842 and #91880
+        if(i == 0 && ((VerifierSync::syncHeight + 1) != 91842) && ((VerifierSync::syncHeight + 1) != 91880)){
+            if(VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[0].txid) != 0)
+                ret = false;
+        }
+        
+        //7. Input validations
         for(int l = 0; l < vb.transactions[i].inputs.size(); l++) {
             
             if(i > 0){
@@ -83,18 +90,13 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             
             //e. Coinbase maturity check
             if(cbUTXOIndex != 0) {
+                cbUTXOIndexes.push_back(cbUTXOIndex);
                 if((VerifierSync::syncHeight + 1 - VerifierSync::coinbaseUTXOs[cbUTXOIndex].height) < 100)
                     ret = false;
             }
                     
             }
             else {
-                
-                //a. BIP-30 check except the two historic blocks at heights #91842 and #91880
-                if(((VerifierSync::syncHeight + 1) != 91842) && ((VerifierSync::syncHeight + 1) != 91880)){
-                    if(VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[0].txid) != 0)
-                        ret = false;
-                }
                 
                 //Coinbase input validations
                 if ((vb.transactions[i].inputs.size() != 1) ||
@@ -110,7 +112,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
         if(elapsedPrevouts != (prevouts.utxos.size() + 1))
             ret = false;
 
-        //7. Output validations
+        //8. Output validations
         for(uint32_t k = 0; k < vb.transactions[i].outputs.size(); k++) {
             
             //Add new utxos to leaf set
@@ -125,7 +127,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
         }
     }
     
-    //8. Inflation check
+    //9. Inflation check
     if(inputSats != outputSats)
         ret = false;
 
@@ -134,16 +136,21 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     
     //AFTER VALIDATIONS
     
-    //9. Free previos header from memory
+    //10. Free coinbase spents from memory
+    for (int i = 0; i < cbUTXOIndexes.size(); i++) {
+        VerifierSync::coinbaseUTXOs.erase(VerifierSync::coinbaseUTXOs.begin() + cbUTXOIndexes[i]);
+    }
+    
+    //11. Free previos header from memory
     if ((((Header*)Header::headerAddresses[0])->height) < (VerifierSync::syncHeight + 1)) {
         delete (Header*)Header::headerAddresses[0];
         Header::headerAddresses.erase(Header::headerAddresses.begin());
     }
 
-    //10. Update forest state
+    //12. Update forest state
     VerifierSync::forestState.Modify(newLeaves, batchProof.GetTargets());
     
-    //11. Increment sync height
+    //13. Increment sync height
     VerifierSync::syncHeight++;
     
     std::cout << "inputSats: " << inputSats << std::endl;
