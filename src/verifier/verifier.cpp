@@ -101,25 +101,25 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             outputSats += vb.transactions[i].outputs[k].amount;
         }
     }
+    
+    //8. Inflation check
+    if(inputSats != outputSats) {
+        ret = false;
+    }
 
     if(!ret)
         return ret;
     
     //AFTER VALIDATIONS
     
-    //8. Free previos header from memory
+    //9. Free previos header from memory
     if ((((Header*)Header::headerAddresses[0])->height) < (VerifierSync::syncHeight + 1)) {
         delete (Header*)Header::headerAddresses[0];
         Header::headerAddresses.erase(Header::headerAddresses.begin());
     }
 
-    //9. Update forest state
+    //10. Update forest state
     VerifierSync::forestState.Modify(newLeaves, batchProof.GetTargets());
-    
-    //10. Inflation check
-    if(inputSats != outputSats) {
-        ret = false;
-    }
     
     //11. Increment sync height
     VerifierSync::syncHeight++;
