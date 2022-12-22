@@ -52,7 +52,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     utreexo::BatchProof batchProof;
     batchProof.Serialize(proofBytes);
     
-    //5. Verify spendings against forest state
+    //5. Verify forest state
     if(!VerifierSync::forestState.Verify(batchProof, prevouts.returnUTXOHashes()))
         ret= false;
     
@@ -81,7 +81,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             //d. Check if this is a coinbase spent
                 uint32_t cbUTXOIndex = VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[i].inputs[l].prevOutHash, vb.transactions[i].inputs[l].voutIndex);
             
-            //e. coinbase spent maturity check
+            //e. Coinbase maturity check
             if(cbUTXOIndex != 0) {
                 if((VerifierSync::syncHeight + 1 - VerifierSync::coinbaseUTXOs[cbUTXOIndex].height) < 100)
                     ret = false;
@@ -90,7 +90,7 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             }
             else {
                 
-                //a. BIP-30 check except the two historic blocks at heights 91842 and 91880
+                //a. BIP-30 check except the two historic blocks at heights #91842 and #91880
                 if(((VerifierSync::syncHeight + 1) != 91842) && ((VerifierSync::syncHeight + 1) != 91880)){
                     if(VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[0].txid) != 0)
                         ret = false;
@@ -157,7 +157,8 @@ VerifierSync::VerifierSync() {
     this->forestState = utreexo::Pollard(0);
 }
 
-VerifierSync::VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots) {
+VerifierSync::VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots, uint32_t numCoinbaseUTXOs, std::array<unsigned char, 5000000> coinbaseUTXOs) {
+
     std::vector<Hash> hashes;
     int elapsed = 0;
     
@@ -169,6 +170,16 @@ VerifierSync::VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t nu
         hashes.push_back(hash);
     }
     
+    valtype rawImportCBUTXOs;
+    for (int i = 0; i < numCoinbaseUTXOs; i++) {
+        rawImportCBUTXOs.push_back(coinbaseUTXOs[i]);
+    }
+    
+    Proof cbUTXOsImport;
+    cbUTXOsImport.importUTXOs(rawImportCBUTXOs);
+    
+    for (int i = 0; i < cbUTXOsImport.utxos.size(); i++) { this->coinbaseUTXOs.push_back(cbUTXOsImport.utxos[i]); }
+
     this->forestState = utreexo::Pollard(hashes, numLeaves);
     this->syncHeight = startHeight;
 }

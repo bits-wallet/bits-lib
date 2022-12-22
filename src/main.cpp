@@ -69,7 +69,8 @@ bool initVerifierSync() {
 }
 
 bool initVerifierSyncFromHeight(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots) {
-    new VerifierSync(startHeight, numLeaves, numRoots, roots);
+    std::array<unsigned char, 5000000> c;
+    new VerifierSync(startHeight, numLeaves, numRoots, roots, 0, c);
     return true;
 }
 

@@ -36,7 +36,7 @@ public:
     
 public:
     VerifierSync();
-    VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots);
+    VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots, uint32_t numCoinbaseUTXOs, std::array<unsigned char, 5000000> coinbaseUTXOs);
 };
 
 class Verifier {
