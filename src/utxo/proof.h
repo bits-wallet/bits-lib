@@ -17,6 +17,7 @@ public:
     std::vector<uint8_t> serializedProof;
     Proof() {};
     bool importUTXOs (valtype rawImport);
+    bool importUTXOsPartial (valtype *rawImport, std::vector<valtype> *prevouts, std::vector<uint32_t> *vouts, uint64_t *inputSats);
     valtype exportUTXOs (std::vector<UTXO> utxos);
     std::vector<Hash> returnUTXOHashes();
     std::vector<Leaf> returnUTXOLeaves();

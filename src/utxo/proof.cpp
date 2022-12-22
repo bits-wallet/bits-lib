@@ -7,6 +7,53 @@
 
 #include "proof.h"
 
+bool Proof::importUTXOsPartial (valtype *rawImport, std::vector<valtype> *prevouts, std::vector<uint32_t> *vouts, uint64_t *inputSats) {
+    unsigned int elapsedBytes = 0;
+    if(rawImport->size() > 0) {
+
+    valtype vTotalLenFirstByte = WizData::splitValtypeSet(rawImport, elapsedBytes, 1); elapsedBytes ++;
+    valtype vTotalLen; uint32_t totalLen;
+    
+    if(vTotalLenFirstByte[0] == 0xFD){
+        vTotalLen = WizData::splitValtypeSet(rawImport, elapsedBytes, 2); elapsedBytes += 2;
+        totalLen = *WizData::LEtoUint32(vTotalLen);
+    }
+    else {
+        totalLen = *WizData::LEtoUint32(vTotalLenFirstByte);
+    }
+
+    for (int i = 0; i < totalLen; i++) {
+        uint32_t height = *WizData::LEtoUint32(WizData::splitValtypeSet(rawImport, elapsedBytes, 4)); elapsedBytes += 4;
+                
+        uint64_t value = *WizData::LEtoUint64(WizData::splitValtypeSet(rawImport, elapsedBytes, 8)); elapsedBytes += 8;
+        *inputSats += value;
+        
+        valtype vScriptPubkeyLen; uint32_t scriptPubkeyLen;
+        valtype vScriptPubkeyLenFirstByte = WizData::splitValtypeSet(rawImport, elapsedBytes, 1); elapsedBytes ++;
+        
+        if(vScriptPubkeyLenFirstByte[0] == 0xFD){
+            vScriptPubkeyLen = WizData::splitValtypeSet(rawImport, elapsedBytes, 2); elapsedBytes += 2;
+            scriptPubkeyLen = *WizData::LEtoUint32(vScriptPubkeyLen);
+        }
+        else if(vScriptPubkeyLenFirstByte[0] == 0xFE){
+            vScriptPubkeyLen = WizData::splitValtypeSet(rawImport, elapsedBytes, 4); elapsedBytes += 4;
+            scriptPubkeyLen = *WizData::LEtoUint32(vScriptPubkeyLen);
+        }
+        else if(vScriptPubkeyLenFirstByte[0] == 0xFF){
+            vScriptPubkeyLen = WizData::splitValtypeSet(rawImport, elapsedBytes, 8); elapsedBytes += 8;
+            scriptPubkeyLen = *WizData::LEtoUint32(vScriptPubkeyLen);
+        }
+        else {
+            scriptPubkeyLen = *WizData::LEtoUint32(vScriptPubkeyLenFirstByte);
+        }
+        
+        valtype scriptPubkey = WizData::splitValtypeSet(rawImport, elapsedBytes, scriptPubkeyLen); elapsedBytes += scriptPubkeyLen;
+        this->utxos.push_back(UTXO(height, (*prevouts)[i], (*vouts)[i], value, scriptPubkey));
+    }
+    }
+    return (elapsedBytes == rawImport->size());
+}
+
 bool Proof::importUTXOs (valtype rawImport) {
     unsigned int elapsedBytes = 0;
     if(rawImport.size() > 0) {
