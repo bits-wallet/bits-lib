@@ -25,4 +25,13 @@ public:
     Hash returnLeafHash();
 };
 
+class PartialUTXO {
+public:
+    uint32_t height;
+    uint64_t value;
+    valtype scriptPubkey;
+    PartialUTXO(uint32_t height, uint64_t value, valtype scriptPubkey): height(height), value(value), scriptPubkey(scriptPubkey) {}
+    ~PartialUTXO() { std::cout << "deleted PartialUTXO utxo: "<< this<< std::endl; };
+};
+
 #endif /* utxo_h */

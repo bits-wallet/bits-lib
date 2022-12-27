@@ -9,7 +9,7 @@
 #include <chrono>
 #include "transaction/transaction.h"
 #include "block/block.h"
-#include "utxo/proof.h"
+#include "utxo/extract.h"
 #include "verifier/verifier.h"
 
 #include "parser/parser.h"
@@ -180,7 +180,7 @@ int main() {
     
     initVerifierSync();
     test_submit_block_1();
-
+    
     std::string s;
     std::cin >> s;
     

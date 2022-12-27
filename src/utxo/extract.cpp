@@ -5,9 +5,9 @@
 //  Created by Burak on 9.12.2022.
 //
 
-#include "proof.h"
+#include "extract.h"
 
-bool Proof::importUTXOsPartial (valtype *rawImport, std::vector<valtype> *prevouts, std::vector<uint32_t> *vouts, uint64_t *inputSats) {
+bool Exract::importUTXOsPartial (valtype *rawImport) {
     unsigned int elapsedBytes = 0;
     if(rawImport->size() > 0) {
 
@@ -26,7 +26,6 @@ bool Proof::importUTXOsPartial (valtype *rawImport, std::vector<valtype> *prevou
         uint32_t height = *WizData::LEtoUint32(WizData::splitValtypeSet(rawImport, elapsedBytes, 4)); elapsedBytes += 4;
                 
         uint64_t value = *WizData::LEtoUint64(WizData::splitValtypeSet(rawImport, elapsedBytes, 8)); elapsedBytes += 8;
-        *inputSats += value;
         
         valtype vScriptPubkeyLen; uint32_t scriptPubkeyLen;
         valtype vScriptPubkeyLenFirstByte = WizData::splitValtypeSet(rawImport, elapsedBytes, 1); elapsedBytes ++;
@@ -48,13 +47,13 @@ bool Proof::importUTXOsPartial (valtype *rawImport, std::vector<valtype> *prevou
         }
         
         valtype scriptPubkey = WizData::splitValtypeSet(rawImport, elapsedBytes, scriptPubkeyLen); elapsedBytes += scriptPubkeyLen;
-        this->utxos.push_back(UTXO(height, (*prevouts)[i], (*vouts)[i], value, scriptPubkey));
+        this->partialUTXOs.push_back(PartialUTXO(height, value, scriptPubkey));
     }
     }
     return (elapsedBytes == rawImport->size());
 }
 
-bool Proof::importUTXOs (valtype rawImport) {
+bool Exract::importUTXOs (valtype rawImport) {
     unsigned int elapsedBytes = 0;
     if(rawImport.size() > 0) {
     valtype *pRawImport = &rawImport;
@@ -96,13 +95,13 @@ bool Proof::importUTXOs (valtype rawImport) {
         }
         
         valtype scriptPubkey = WizData::splitValtypeSet(pRawImport, elapsedBytes, scriptPubkeyLen); elapsedBytes += scriptPubkeyLen;
-        this->utxos.push_back(UTXO(height, prevHash, vout, value, scriptPubkey));
+        this->UTXOs.push_back(UTXO(height, prevHash, vout, value, scriptPubkey));
     }
     }
     return (elapsedBytes == rawImport.size());
 }
 
-valtype Proof::exportUTXOs(std::vector<UTXO> importUTXOs){
+valtype Exract::exportUTXOs(std::vector<UTXO> importUTXOs){
     valtype returnValtype;
     
     if(importUTXOs.size() > 0) {
@@ -136,18 +135,18 @@ valtype Proof::exportUTXOs(std::vector<UTXO> importUTXOs){
     return returnValtype;
 }
 
-std::vector<Hash> Proof::returnUTXOHashes() {
+std::vector<Hash> Exract::returnUTXOHashes() {
     std::vector<Hash> ret;
-    for(int i = 0; i < this->utxos.size(); i++) {
-        ret.push_back(this->utxos[i].returnLeafHash());
+    for(int i = 0; i < this->UTXOs.size(); i++) {
+        ret.push_back(this->UTXOs[i].returnLeafHash());
     }
     return ret;
 }
 
-std::vector<Leaf> Proof::returnUTXOLeaves() {
+std::vector<Leaf> Exract::returnUTXOLeaves() {
     std::vector<Leaf> ret;
-    for(int i = 0; i < this->utxos.size(); i++) {
-        ret.emplace_back(this->utxos[i].returnLeafHash(), false);
+    for(int i = 0; i < this->UTXOs.size(); i++) {
+        ret.emplace_back(this->UTXOs[i].returnLeafHash(), false);
     }
     return ret;
 }

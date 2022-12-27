@@ -15,7 +15,7 @@
 #include "../utxo/utxo.h"
 #include "../utreexo.h"
 #include "../block/block.h"
-#include "../utxo/proof.h"
+#include "../utxo/extract.h"
 
 
 class VerifierSync {
@@ -27,10 +27,8 @@ public:
     static uint64_t getNumRoots();
     static uint64_t getNumLeaves();
     static uint32_t getSyncHeight();
-    
     static uint32_t returnCoinbaseUTXOIndex(valtype prevHash, uint32_t vout);
     static uint32_t returnCoinbaseUTXOIndex(valtype prevHash);
-    
     static uint32_t getCoinbaseUTXOsSize();
     static std::array<unsigned char, 5000000> getCoinbaseUTXOs();
     
@@ -43,6 +41,16 @@ class Verifier {
 public:
     Verifier() {};
     bool verify(valtype rawBlock, valtype spendings, valtype proof);
+private:
+    uint32_t returnCollectionIndex(valtype prevHash, uint32_t vout);
+    std::vector<uint32_t> cbSpentIndexes;
+    utreexo::BatchProof batchProof;
+    std::vector<Hash> spentHashes;
+    std::vector<Bytes> txIDs;
+    std::vector<UTXO*> OutCollection;
+    uint64_t *inputSats = 0;
+    uint64_t *outputSats = 0;
+    uint32_t getThisHeight() { return VerifierSync::syncHeight + 1; }
 };
 
 #endif /* verifier_h */

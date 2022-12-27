@@ -5,22 +5,24 @@
 //  Created by Burak on 9.12.2022.
 //
 
-#ifndef proof_h
-#define proof_h
+#ifndef extract_h
+#define extract_h
 
 #include <stdio.h>
 #include "utxo.h"
 
-class Proof {    
+class Exract {
 public:
-    std::vector<UTXO> utxos;
+    Exract() {};
+    std::vector<UTXO> UTXOs;
+    std::vector<PartialUTXO> partialUTXOs;
     std::vector<uint8_t> serializedProof;
-    Proof() {};
     bool importUTXOs (valtype rawImport);
-    bool importUTXOsPartial (valtype *rawImport, std::vector<valtype> *prevouts, std::vector<uint32_t> *vouts, uint64_t *inputSats);
+    bool importUTXOsPartial (valtype *rawImport);
     valtype exportUTXOs (std::vector<UTXO> utxos);
     std::vector<Hash> returnUTXOHashes();
     std::vector<Leaf> returnUTXOLeaves();
+    uint32_t elapsed = 0;
 };
 
-#endif /* proof_h */
+#endif /* extract_h */

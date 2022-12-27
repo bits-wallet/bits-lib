@@ -34,130 +34,139 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     if(VerifierSync::syncHeight >= HeaderSync::syncHeight)
         ret = false;
     
-    //1. Craft block template
+    // 1. Craft block template
     Block vb = Block::submitNewBlock(rawBlock);
-    
-    //2. Merkle root match
-    std::vector<Bytes> txIDs;
-    for(int i = 0; i < vb.transactions.size(); i++){ txIDs.push_back(vb.transactions[i].txid); }
-    if(returnMerkleRoot(txIDs) != Header::getHeaderMerkeRoot(VerifierSync::syncHeight + 1))
+        
+    // 2. Import Partial UTXOs
+    Exract prevouts;
+    if(!prevouts.importUTXOsPartial(&rawSpendings))
         ret = false;
-    
-    std::vector<valtype> pPrevouts;
-    std::vector<uint32_t> pVouts;
-    
-    std::vector<uint32_t> cbUTXOIndexes;
-    int elapsedPrevouts = 0;
-    std::vector<Leaf> newLeaves;
-    uint64_t inputSats = 0;
-    uint64_t outputSats = 0;
-    
+        
     for (int i = 0; i < vb.transactions.size(); i++) {
         
-        //3. BIP-30 check except the two historic blocks at heights #91842 and #91880
-        if(i == 0 && ((VerifierSync::syncHeight + 1) != 91842) && ((VerifierSync::syncHeight + 1) != 91880)){
+        // 3. Push tx id of each transaction for later merkle root check
+        txIDs.push_back(vb.transactions[i].txid);
+        
+        // 4. BIP-30 check except the two historic blocks at heights #91842 and #91880
+        if(i == 0 && ((VerifierSync::syncHeight + 1) != 91842) && ((VerifierSync::syncHeight + 1) != 91880))
             if(VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[0].txid) != 0)
                 ret = false;
-        }
         
-        for(int l = 0; l < vb.transactions[i].inputs.size(); l++) {
+        // 5. Inputs
+        for(int in = 0; in < vb.transactions[i].inputs.size(); in++) {
             
-            if(i > 0){
-                pPrevouts.push_back(vb.transactions[i].inputs[l].prevOutHash);
-                pVouts.push_back(vb.transactions[i].inputs[l].voutIndex);
-
-            //4. Check coinbase spents
-            uint32_t cbUTXOIndex = VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[i].inputs[l].prevOutHash, vb.transactions[i].inputs[l].voutIndex);
-            if(cbUTXOIndex != 0) {
-                //Coinbase maturity check
-                if((VerifierSync::syncHeight + 1 - VerifierSync::coinbaseUTXOs[cbUTXOIndex].height) < 100)
-                    ret = false;
-                //Push cb spent index
-                cbUTXOIndexes.push_back(cbUTXOIndex);
-            }
-            }
-            else {
-                //5. Coinbase input validations
-                if ((vb.transactions[i].inputs.size() != 1) ||
-                    (vb.transactions[i].inputs[0].scriptSig.size() > 100) ||
-                    (vb.transactions[i].inputs[0].scriptSig.size() < 2))
+            if(i == 0) {
+                // COINBASE INPUT
+                if ((vb.transactions[0].inputs.size() != 1) ||
+                    (vb.transactions[0].inputs[0].scriptSig.size() > 100) ||
+                    (vb.transactions[0].inputs[0].scriptSig.size() < 2))
                     ret = false;
                 
-                //6. Block subsidty
-                inputSats += GetBlockSubsidy(VerifierSync::syncHeight + 1);
+                // Block subsidty
+                inputSats += GetBlockSubsidy(getThisHeight());
             }
-            elapsedPrevouts++;
+            else {
+                //NON-COINBASE INPUT
+                
+                // Is this input from this block?
+                uint32_t index = Verifier::returnCollectionIndex(vb.transactions[i].inputs[in].prevOutHash, vb.transactions[i].inputs[in].voutIndex);
+                
+                if(index != 0) {
+                    // Outer UTXO
+                    
+                    uint32_t cbIndex = VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[i].inputs[in].prevOutHash, vb.transactions[i].inputs[in].voutIndex);
+                    if(cbIndex != 0) {
+                        //Coinbase maturity check
+                        if((getThisHeight() - VerifierSync::coinbaseUTXOs[cbIndex].height) < 100)
+                            ret = false;
+                        //Push cb spent index
+                        cbSpentIndexes.push_back(cbIndex);
+                    }
+                    
+                    UTXO thisUTXO = UTXO(prevouts.partialUTXOs[prevouts.elapsed].height,
+                                         vb.transactions[i].inputs[in].prevOutHash,
+                                         vb.transactions[i].inputs[in].voutIndex,
+                                         prevouts.partialUTXOs[prevouts.elapsed].value,
+                                         prevouts.partialUTXOs[prevouts.elapsed].scriptPubkey);
+                    prevouts.elapsed++;
+                    spentHashes.push_back(thisUTXO.returnLeafHash());
+                    
+                    //thisUTXO Evalscript()..
+                }
+                else {
+                    // Same-block-UTXO
+                    UTXO thisUTXO = *OutCollection[index];
+                    spentHashes.push_back(thisUTXO.returnLeafHash());
+                    
+                    //thisUTXO Evalscript()..
+                    
+                    OutCollection.erase(OutCollection.begin() + index);
+                    delete OutCollection[index];
+                }
+            }
         }
-
-        for(uint32_t k = 0; k < vb.transactions[i].outputs.size(); k++) {
-            
-            //7. Add new utxos to leaf set
-            UTXO newUtxo(VerifierSync::syncHeight + 1, vb.transactions[i].txid, k, (vb.transactions[i].outputs[k].amount), vb.transactions[i].outputs[k].scriptPubkey);
-            newLeaves.emplace_back(newUtxo.returnLeafHash(), false);
-            
-            //8. Add coinbase UTXOs
-            if(i == 0)
-                VerifierSync::coinbaseUTXOs.push_back(newUtxo);
-            
-            //9. Increment output sats
-            outputSats += vb.transactions[i].outputs[k].amount;
+        
+        // 6. Outputs
+        for(int out = 0; out < vb.transactions[i].outputs.size(); out++) {
+            OutCollection.push_back(new UTXO(getThisHeight(),
+                                     vb.transactions[i].txid,
+                                     out,
+                                     vb.transactions[i].outputs[out].amount,
+                                     vb.transactions[i].outputs[out].scriptPubkey));
+            outputSats += vb.transactions[i].outputs[out].amount;
         }
     }
     
-    //10. Import UTXOs
-    Proof prevouts;
-    if(!prevouts.importUTXOsPartial(&rawSpendings, &pPrevouts, &pVouts, &inputSats))
-        ret = false;
-    
-    //11. Craft batchproof
-    utreexo::BatchProof batchProof;
+    // 7. Craft batchproof
     batchProof.Serialize(proofBytes);
-    
-    //12. Verify forest state
-    if(!VerifierSync::forestState.Verify(batchProof, prevouts.returnUTXOHashes()))
+        
+    // 8. Verify forest state
+    if(!VerifierSync::forestState.Verify(batchProof, spentHashes))
         ret= false;
-    
-    //13. Inflation check
+        
+    // 9. Inflation check
     if(inputSats != outputSats)
         ret = false;
     
-    //14. Libbitcoin-consensus::EvalScript()...
-    
-
+    // 10. Merkle root match
+    if(returnMerkleRoot(txIDs) != Header::getHeaderMerkeRoot(VerifierSync::syncHeight + 1))
+        ret = false;
+            
     if(!ret)
         return ret;
-    
-    //AFTER VALIDATIONS
-    
-    //15. Free coinbase spents from memory
-    for (int i = 0; i < cbUTXOIndexes.size(); i++) {
-        VerifierSync::coinbaseUTXOs.erase(VerifierSync::coinbaseUTXOs.begin() + cbUTXOIndexes[i]);
+        
+    // AFTER VALIDATIONS
+        
+    // 11. Free coinbase spents from memory
+    for (int i = 0; i < cbSpentIndexes.size(); i++) {
+        VerifierSync::coinbaseUTXOs.erase(VerifierSync::coinbaseUTXOs.begin() + cbSpentIndexes[i]);
     }
     
-    //16. Free previos header from memory
+    // 12. Free previos header from memory
     if ((((Header*)Header::headerAddresses[0])->height) < (VerifierSync::syncHeight + 1)) {
         delete (Header*)Header::headerAddresses[0];
         Header::headerAddresses.erase(Header::headerAddresses.begin());
     }
-
-    //17. Update forest state
+        
+    // 13. Update forest state
+    std::vector<Leaf> newLeaves;
+    for (int i = 0; i < OutCollection.size(); i++) {
+        newLeaves.emplace_back(OutCollection[i]->returnLeafHash(), false);
+    }
     VerifierSync::forestState.Modify(newLeaves, batchProof.GetTargets());
     
-    //18. Increment sync height
+    // 14. Increment sync height
     VerifierSync::syncHeight++;
     
-    std::cout << "inputSats: " << inputSats << std::endl;
-    std::cout << "outputSats: " << outputSats << std::endl;
-    
     return ret;
-}
+    }
 
 VerifierSync::VerifierSync() {
     this->syncHeight = 0;
     this->forestState = utreexo::Pollard(0);
 }
 
-VerifierSync::VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots, uint32_t numCoinbaseUTXOs, std::array<unsigned char, 5000000> coinbaseUTXOs) {
+VerifierSync::VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t numRoots, std::array<unsigned char, 1024>roots, uint32_t numCoinbaseUTXOs, std::array<unsigned char, 5000000> InCBUTXOs) {
 
     std::vector<Hash> hashes;
     int elapsed = 0;
@@ -172,13 +181,15 @@ VerifierSync::VerifierSync(uint32_t startHeight, uint64_t numLeaves, uint64_t nu
     
     valtype rawImportCBUTXOs;
     for (int i = 0; i < numCoinbaseUTXOs; i++) {
-        rawImportCBUTXOs.push_back(coinbaseUTXOs[i]);
+        rawImportCBUTXOs.push_back(InCBUTXOs[i]);
     }
     
-    Proof cbUTXOsImport;
+    Exract cbUTXOsImport;
     cbUTXOsImport.importUTXOs(rawImportCBUTXOs);
     
-    for (int i = 0; i < cbUTXOsImport.utxos.size(); i++) { this->coinbaseUTXOs.push_back(cbUTXOsImport.utxos[i]); }
+    for (int i = 0; i < cbUTXOsImport.UTXOs.size(); i++) {
+        this->coinbaseUTXOs.push_back(cbUTXOsImport.UTXOs[i]);
+    }
 
     this->forestState = utreexo::Pollard(hashes, numLeaves);
     this->syncHeight = startHeight;
@@ -189,8 +200,7 @@ std::array<unsigned char, 1024> VerifierSync::getRoots() {
     
     std::vector<Hash> roots;
     forestState.Roots(roots);
-    
-    //
+
     int elapsed = -1;
     for(int i = 0; i < roots.size(); i++) {
         for(int l = 0; l < 32; l++) {
@@ -216,7 +226,7 @@ uint32_t VerifierSync::getSyncHeight() {
 }
 
 std::array<unsigned char, 5000000> VerifierSync::getCoinbaseUTXOs() {
-    Proof p;
+    Exract p;
     valtype ret = p.exportUTXOs(VerifierSync::coinbaseUTXOs);
     std::array<unsigned char, 5000000> ar;
     
@@ -230,7 +240,7 @@ std::array<unsigned char, 5000000> VerifierSync::getCoinbaseUTXOs() {
 }
 
 uint32_t VerifierSync::getCoinbaseUTXOsSize() {
-    Proof p;
+    Exract p;
     valtype ret = p.exportUTXOs(VerifierSync::coinbaseUTXOs);
     return (uint32_t)ret.size();
 }
@@ -240,6 +250,17 @@ uint32_t VerifierSync::returnCoinbaseUTXOIndex(valtype prevHash, uint32_t vout) 
     
     for (int i = 0; i < coinbaseUTXOs.size(); i++) {
         if((coinbaseUTXOs[i].prevHash == prevHash) && (coinbaseUTXOs[i].vout == vout)){
+            ret = i;
+        }
+    }
+    return ret;
+}
+
+uint32_t Verifier::returnCollectionIndex(valtype prevHash, uint32_t vout) {
+    uint32_t ret = 0;
+    
+    for (int i = 0; i < OutCollection.size(); i++) {
+        if((OutCollection[i]->prevHash == prevHash) && (OutCollection[i]->vout == vout)){
             ret = i;
         }
     }
