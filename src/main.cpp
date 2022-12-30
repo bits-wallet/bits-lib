@@ -135,15 +135,9 @@ void test_submit_block_1() {
 int main() {
 
     initHeaderSyncGenesis();
-    test_submit_header_1();
-    //
-    //
     
-    initVerifierSync();
-    test_submit_block_1();
-    //
-    //
- 
+    //Ahmet reis submitRawHeader kullanarak yeni blokları pushla
+    
     std::string s;
     std::cin >> s;
     
