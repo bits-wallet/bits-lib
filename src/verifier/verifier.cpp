@@ -29,14 +29,14 @@ CAmount GetBlockSubsidy(int nHeight)
 bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_t> proofBytes) {
     
     bool ret = true;
-    std::cout << "hihi 1 "  << ret << std::endl;
+
     //reorg?
     if(VerifierSync::syncHeight >= HeaderSync::syncHeight)
         ret = false;
     
     // 1. Craft block template
     Block vb = Block::submitNewBlock(rawBlock);
-    std::cout << "hihi 2 "  << ret << std::endl;
+
     // 2. Import Partial UTXOs
     Exract prevouts;
     if(!prevouts.importUTXOsPartial(&rawSpendings))
@@ -92,10 +92,6 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
                     spentHashes.push_back(thisUTXO.returnLeafHash());
                     inputSats += thisUTXO.value;
                     
-                    std::cout << "muhaaaa: " << (int)thisUTXO.returnLeafHash()[0] << std::endl;
-                    std::cout << "muhaaaa: " << (int)thisUTXO.returnLeafHash()[1] << std::endl;
-                    std::cout << "muhaaaa: " << (int)thisUTXO.returnLeafHash()[2] << std::endl;
-                    
                     //thisUTXO Evalscript()..
                 }
                 else {
@@ -121,30 +117,25 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             outputSats += vb.transactions[i].outputs[out].amount;
         }
     }
-    std::cout << "hihi 3 "  << ret << std::endl;
+
     // 7. Craft batchproof
     batchProof.Unserialize(proofBytes);
-    std::cout << "hihi 4 "  << ret << std::endl;
-    
     
     // 8. Verify forest state
     if(!VerifierSync::forestState.Verify(batchProof, spentHashes))
         ret= false;
-    std::cout << "hihi 5 "  << ret << std::endl;
+
     // 9. Inflation check
     if(inputSats != outputSats)
         ret = false;
-    std::cout << "hihi 6 "  << ret << std::endl;
-    std::cout << "sad1 "  << getThisHeight() << std::endl;
-    std::cout << "sad2 "  << Header::headerAddresses.size() << std::endl;
-    std::cout << "sad3 "  << (int)Header::getHeaderMerkeRoot(getThisHeight())[0] << std::endl;
+
     // 10. Merkle root match
     if(returnMerkleRoot(txIDs) != Header::getHeaderMerkeRoot(getThisHeight()))
         ret = false;
-    std::cout << "hihi 7 "  << ret << std::endl;
+
     if(!ret)
         return ret;
-    std::cout << "hihi 8 "  << ret << std::endl;
+
     // AFTER VALIDATIONS
         
     // 11. Free coinbase spents from memory

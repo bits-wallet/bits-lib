@@ -176,7 +176,6 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
         this-> nonce = *nonce;
         
         if(rewrite == true) {
-            std::cout << "isrewrite " << std::endl;
             delete (Header*)Header::headerAddresses[Header::headerAddresses.size()-1];
             Header::headerAddresses.erase(Header::headerAddresses.end()-1);
             this->height = HeaderSync::syncHeight;
@@ -188,7 +187,6 @@ void Header::setHeader(uint32_t *version, valtype *prevHash, valtype *merkeRoot,
         }
 
         Header::headerAddresses.push_back((uint64_t)this);
-        std::cout << "ANAAA " << Header::headerAddresses.size() << std::endl;
         HeaderSync::ancestorPast11Timestamps.push_back(*timestamp);
     }
     delete version; delete prevHash; delete merkeRoot; delete timestamp; delete bits; delete nonce; delete blockHash;
