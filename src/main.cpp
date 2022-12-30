@@ -171,15 +171,139 @@ void test_submit_header_3() {
     std::cout << "submit: " << success << std::endl;
     }
 
+std::string getRawBlock(int height) {
+    
+    char buf[8000000];
+    std::string query = "curl -H  \"Content-Type: application/json\" -X GET  http://mempool-env.eba-qh6r3f7d.us-east-2.elasticbeanstalk.com/block/"+ std::to_string(height) ;
+    
+    FILE * output = popen(query.c_str(), "r");
+    std::cout << "zazab: " << sizeof(*output) << std::endl;
+    while (fgets (buf, 8000000, output)) {}
+    
+    pclose(output);
+    return buf;
+  }
+
+std::string getLastHeight() {
+    
+    char buf[32];
+    std::string query = "curl -H  \"Content-Type: application/json\" -X GET  http://mempool-env.eba-qh6r3f7d.us-east-2.elasticbeanstalk.com/lastblock";
+    
+    FILE * output = popen(query.c_str(), "r");
+    
+    while (fgets (buf, 32, output)) {}
+    
+    pclose(output);
+    return buf;
+  }
+
+std::string getBlockS(int height) {
+    
+    char buf[8000000];
+    std::string query = "curl -H  \"Content-Type: application/json\" -X GET  http://18.119.138.90:1923/gets/"+ std::to_string(height) ;
+    
+    FILE * output = popen(query.c_str(), "r");
+    
+    while (fgets (buf, 8000000, output)) {}
+    
+    pclose(output);
+        
+    return buf;
+  }
+
+std::string getBlockP(int height) {
+    
+    char buf[8000000];
+    std::string query = "curl -H  \"Content-Type: application/json\" -X GET  http://18.119.138.90:1923/getp/"+ std::to_string(height) ;
+    
+    FILE * output = popen(query.c_str(), "r");
+
+    while (fgets (buf, 8000000, output)) {}
+    
+    pclose(output);
+    
+    return buf;
+  }
+
 int main() {
 
     initHeaderSyncGenesis();
-    test_submit_header_1();
-    test_submit_header_2();
-    test_submit_header_3();
+    //test_submit_header_1();
+    //test_submit_header_2();
+    //test_submit_header_3();
     
     initVerifierSync();
-    test_submit_block_1();
+    //test_submit_block_1();
+    
+    
+    
+    for (int l = 1; l < 2147483647; l++) {
+        
+        std::cout << "CURRENTLY SYNCING: " << l << std::endl;
+        
+        std::string lastHeightStr = getLastHeight();
+        int lastHeight = std::stoi(lastHeightStr.substr(1,lastHeightStr.size()-2));
+        std::cout << "lastHeight: " << lastHeight << std::endl;
+        
+        if(l >= lastHeight){
+            break;
+        }
+        
+   
+        
+        
+        
+        //BLOCK
+        
+        std::string newBlock = getRawBlock(l);
+        std::string newBlockS = getBlockS(l);
+        if(newBlockS == "00")
+            newBlockS = "";
+        
+        std::string newBlockP = getBlockP(l);
+
+        valtype newBlockRaw = stringToValtype(newBlock.substr(1,newBlock.size()-2));
+        valtype newBlockPRaw = stringToValtype(newBlockP);
+        valtype newBlockSRaw = stringToValtype(newBlockS);
+        
+        std::cout << "newBlockRaw SAYZ : " << newBlockRaw.size() << std::endl;
+        std::cout << "newBlockPRaw SAYZ : " << newBlockPRaw.size() << std::endl;
+        std::cout << "newBlockSRaw SAYZ : " << newBlockSRaw.size() << std::endl;
+        
+        std::vector<uint8_t> proofBytes;;
+        for(int i = 0; i < newBlockPRaw.size(); i++) { proofBytes.push_back((uint8_t)newBlockPRaw[i]); }
+        
+        
+        
+        //HEADER
+        
+        valtype rawHeader = stringToValtype(newBlock.substr(1, 160));
+        
+        std::cout << "rawHeader SAYZ : " << rawHeader.size() << std::endl;
+
+        Header *newHeader = new Header(rawHeader);
+        bool success = (newHeader->height > 0);
+        if (!success)
+            delete newHeader;
+        
+        assert(success);
+        
+        std::cout << "HEADERSUB : " << success << std::endl;
+        std::cout << "HOAY : " << Header::headerAddresses.size() << std::endl;
+        std::cout << "newHeaderheader : " << newHeader->getHeaderMerkeRoot(l).size() << std::endl;
+        
+        
+        Verifier *blockVerifier = new Verifier;
+        
+        assert(blockVerifier->verify(newBlockRaw, newBlockSRaw, proofBytes));
+        
+        std::cout << "BLOCKSUB : " << VerifierSync::getSyncHeight() << std::endl;
+        
+        std::cout << "PR : " << std::endl;
+        
+        VerifierSync::forestState.PrintRoots();
+        
+    }
     
     std::string s;
     std::cin >> s;

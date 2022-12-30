@@ -29,14 +29,14 @@ CAmount GetBlockSubsidy(int nHeight)
 bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_t> proofBytes) {
     
     bool ret = true;
-    
+    std::cout << "hihi 1 "  << ret << std::endl;
     //reorg?
     if(VerifierSync::syncHeight >= HeaderSync::syncHeight)
         ret = false;
     
     // 1. Craft block template
     Block vb = Block::submitNewBlock(rawBlock);
-        
+    std::cout << "hihi 2 "  << ret << std::endl;
     // 2. Import Partial UTXOs
     Exract prevouts;
     if(!prevouts.importUTXOsPartial(&rawSpendings))
@@ -69,9 +69,9 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
                 //NON-COINBASE INPUT
                 
                 // Is this input from this block?
-                uint32_t index = Verifier::returnCollectionIndex(vb.transactions[i].inputs[in].prevOutHash, vb.transactions[i].inputs[in].voutIndex);
+                int index = Verifier::returnCollectionIndex(vb.transactions[i].inputs[in].prevOutHash, vb.transactions[i].inputs[in].voutIndex);
                 
-                if(index != 0) {
+                if(index == -1) {
                     // Outer UTXO
                     
                     uint32_t cbIndex = VerifierSync::returnCoinbaseUTXOIndex(vb.transactions[i].inputs[in].prevOutHash, vb.transactions[i].inputs[in].voutIndex);
@@ -90,16 +90,21 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
                                          prevouts.partialUTXOs[prevouts.elapsed].scriptPubkey);
                     prevouts.elapsed++;
                     spentHashes.push_back(thisUTXO.returnLeafHash());
+                    inputSats += thisUTXO.value;
+                    
+                    std::cout << "muhaaaa: " << (int)thisUTXO.returnLeafHash()[0] << std::endl;
+                    std::cout << "muhaaaa: " << (int)thisUTXO.returnLeafHash()[1] << std::endl;
+                    std::cout << "muhaaaa: " << (int)thisUTXO.returnLeafHash()[2] << std::endl;
                     
                     //thisUTXO Evalscript()..
                 }
                 else {
                     // Same-block-UTXO
                     UTXO thisUTXO = *OutCollection[index];
-                    spentHashes.push_back(thisUTXO.returnLeafHash());
+                    //spentHashes.push_back(thisUTXO.returnLeafHash());
                     
                     //thisUTXO Evalscript()..
-                    
+                    inputSats += thisUTXO.value;
                     OutCollection.erase(OutCollection.begin() + index);
                     delete OutCollection[index];
                 }
@@ -116,25 +121,30 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
             outputSats += vb.transactions[i].outputs[out].amount;
         }
     }
-    
+    std::cout << "hihi 3 "  << ret << std::endl;
     // 7. Craft batchproof
-    batchProof.Serialize(proofBytes);
-        
+    batchProof.Unserialize(proofBytes);
+    std::cout << "hihi 4 "  << ret << std::endl;
+    
+    
     // 8. Verify forest state
     if(!VerifierSync::forestState.Verify(batchProof, spentHashes))
         ret= false;
-        
+    std::cout << "hihi 5 "  << ret << std::endl;
     // 9. Inflation check
     if(inputSats != outputSats)
         ret = false;
-    
+    std::cout << "hihi 6 "  << ret << std::endl;
+    std::cout << "sad1 "  << getThisHeight() << std::endl;
+    std::cout << "sad2 "  << Header::headerAddresses.size() << std::endl;
+    std::cout << "sad3 "  << (int)Header::getHeaderMerkeRoot(getThisHeight())[0] << std::endl;
     // 10. Merkle root match
-    if(returnMerkleRoot(txIDs) != Header::getHeaderMerkeRoot(VerifierSync::syncHeight + 1))
+    if(returnMerkleRoot(txIDs) != Header::getHeaderMerkeRoot(getThisHeight()))
         ret = false;
-            
+    std::cout << "hihi 7 "  << ret << std::endl;
     if(!ret)
         return ret;
-        
+    std::cout << "hihi 8 "  << ret << std::endl;
     // AFTER VALIDATIONS
         
     // 11. Free coinbase spents from memory
@@ -146,6 +156,8 @@ bool Verifier::verify(valtype rawBlock, valtype rawSpendings, std::vector<uint8_
     if ((((Header*)Header::headerAddresses[0])->height) < (VerifierSync::syncHeight + 1)) {
         delete (Header*)Header::headerAddresses[0];
         Header::headerAddresses.erase(Header::headerAddresses.begin());
+        //?
+        HeaderSync::startingSyncHeight++;
     }
         
     // 13. Update forest state
@@ -256,8 +268,8 @@ uint32_t VerifierSync::returnCoinbaseUTXOIndex(valtype prevHash, uint32_t vout) 
     return ret;
 }
 
-uint32_t Verifier::returnCollectionIndex(valtype prevHash, uint32_t vout) {
-    uint32_t ret = 0;
+int Verifier::returnCollectionIndex(valtype prevHash, uint32_t vout) {
+    int ret = -1;
     
     for (int i = 0; i < OutCollection.size(); i++) {
         if((OutCollection[i]->prevHash == prevHash) && (OutCollection[i]->vout == vout)){

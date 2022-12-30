@@ -42,7 +42,7 @@ public:
     Verifier() {};
     bool verify(valtype rawBlock, valtype spendings, valtype proof);
 private:
-    uint32_t returnCollectionIndex(valtype prevHash, uint32_t vout);
+    int returnCollectionIndex(valtype prevHash, uint32_t vout);
     std::vector<uint32_t> cbSpentIndexes;
     utreexo::BatchProof batchProof;
     std::vector<Hash> spentHashes;
